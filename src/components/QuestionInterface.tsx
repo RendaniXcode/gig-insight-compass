@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +34,7 @@ const QuestionInterface = ({
 }: QuestionInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState("");
+  const [customInput, setCustomInput] = useState("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
@@ -49,13 +48,35 @@ const QuestionInterface = ({
   useEffect(() => {
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
-      setCurrentAnswer(existingResponse?.answer || "");
+      const response = existingResponse?.answer || "";
+      
+      // Check if it's a custom "Other" response
+      if (currentQuestion.options?.includes('Other') && response && !currentQuestion.options.includes(response)) {
+        setCurrentAnswer('Other');
+        setCustomInput(response);
+      } else {
+        setCurrentAnswer(response);
+        setCustomInput("");
+      }
     }
   }, [currentQuestion, responses]);
 
   const handleAnswerChange = (value: string) => {
     setCurrentAnswer(value);
     if (currentQuestion) {
+      if (value === 'Other') {
+        // Don't save yet, wait for custom input
+        setCustomInput("");
+      } else {
+        onResponseChange(currentQuestion.id, value);
+        setCustomInput("");
+      }
+    }
+  };
+
+  const handleCustomInputChange = (value: string) => {
+    setCustomInput(value);
+    if (currentQuestion && currentAnswer === 'Other') {
       onResponseChange(currentQuestion.id, value);
     }
   };
@@ -134,18 +155,29 @@ const QuestionInterface = ({
       
       case 'multiple_choice':
         return (
-          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
-            <SelectTrigger className="text-base md:text-lg">
-              <SelectValue placeholder="Select an option..." />
-            </SelectTrigger>
-            <SelectContent>
-              {currentQuestion.options?.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-4">
+            <Select value={currentAnswer} onValueChange={handleAnswerChange}>
+              <SelectTrigger className="text-base md:text-lg">
+                <SelectValue placeholder="Select an option..." />
+              </SelectTrigger>
+              <SelectContent>
+                {currentQuestion.options?.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {currentAnswer === 'Other' && (
+              <Input
+                placeholder="Please specify..."
+                value={customInput}
+                onChange={(e) => handleCustomInputChange(e.target.value)}
+                className="text-base md:text-lg"
+              />
+            )}
+          </div>
         );
       
       case 'yes_no':

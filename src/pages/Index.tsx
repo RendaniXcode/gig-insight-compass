@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -317,6 +316,12 @@ const Index = () => {
     }
   };
 
+  const handleHomeClick = () => {
+    setCurrentView('categories');
+    setSelectedCategory(null);
+    toast.info("Returning to categories");
+  };
+
   // Show setup if no interviewer is set
   if (currentView === 'setup' || !session.interviewer) {
     return (
@@ -361,9 +366,8 @@ const Index = () => {
             
             <Button
               variant={currentView === 'categories' ? 'default' : 'outline'}
-              onClick={() => setCurrentView('categories')}
+              onClick={handleHomeClick}
               className="flex items-center gap-2 whitespace-nowrap"
-              disabled={session.status === 'completed'}
             >
               <Home className="h-4 w-4" />
               Categories

@@ -174,7 +174,16 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'PM_03', question: 'Do you know who to contact when something goes wrong?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '11. Support Systems' },
   { id: 'PM_03a', question: 'Who do you contact when something goes wrong?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_03', interviewSection: '11. Support Systems' },
   { id: 'PM_04', question: 'Are there channels for wage issues?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '11. Support Systems' },
-  { id: 'PM_04a', question: 'What channels exist for wage issues?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_04', interviewSection: '11. Support Systems' },
+  { 
+    id: 'PM_04a', 
+    question: 'What channels exist for wage issues?', 
+    category: 'Platform Management', 
+    categoryCode: 'PM', 
+    type: 'multiple_choice',
+    options: ['Support via app', 'Telephone', 'Go to the office', 'Contact Supervisor', 'Other'],
+    followUpTo: 'PM_04', 
+    interviewSection: '11. Support Systems'
+  },
   { id: 'PM_05', question: 'Are there channels for suspension/deactivation issues?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '11. Support Systems' },
   { id: 'PM_05a', question: 'What channels exist for suspension/deactivation?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_05', interviewSection: '11. Support Systems' },
 
@@ -227,6 +236,6 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'PC_02', question: 'What one thing would you change about this platform?', category: 'Platform Comparison', categoryCode: 'PC', type: 'text', interviewSection: '16. Final Assessment' },
 
   // Research Documentation
-  { id: 'RD_01', question: 'Key quotes and observations', category: 'Research Documentation', categoryCode: 'RD', type: 'textarea', interviewSection: '17. Research Notes' },
-  { id: 'RD_02', question: 'Interviewer reflections', category: 'Research Documentation', categoryCode: 'RD', type: 'textarea', interviewSection: '17. Research Notes' }
+  { id: 'RD_01', question: 'Key quotes and observations', category: 'Research Documentation', categoryCode: 'RD', type: 'text', interviewSection: '17. Research Notes' },
+  { id: 'RD_02', question: 'Interviewer reflections', category: 'Research Documentation', categoryCode: 'RD', type: 'text', interviewSection: '17. Research Notes' }
 ];
