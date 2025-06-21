@@ -105,7 +105,6 @@ export const SURVEY_QUESTIONS: Question[] = [
     options: ['Bank transfer', 'Digital wallet', 'Cash', 'Check', 'Cryptocurrency', 'Other'],
     interviewSection: '5. Payment & Income'
   },
-  { id: 'PE_06a', question: 'Can you choose your payment currency?', category: 'Payment & Earnings', categoryCode: 'PE', type: 'yes_no', interviewSection: '5. Payment & Income' },
 
   // Work Costs
   { 
@@ -120,21 +119,20 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'WC_02', question: 'Do you pay commission or fees to the platform?', category: 'Work Costs', categoryCode: 'WC', type: 'yes_no', interviewSection: '6. Work Expenses' },
   { id: 'WC_02a', question: 'What percentage commission/fees do you pay?', category: 'Work Costs', categoryCode: 'WC', type: 'number', followUpTo: 'WC_02', interviewSection: '6. Work Expenses' },
   { id: 'WC_03', question: 'Does your income fluctuate week to week?', category: 'Work Costs', categoryCode: 'WC', type: 'yes_no', interviewSection: '6. Work Expenses' },
-  { id: 'WC_03a', question: 'Does your income fluctuate month to month?', category: 'Work Costs', categoryCode: 'WC', type: 'yes_no', interviewSection: '6. Work Expenses' },
-  { id: 'WC_03b', question: 'Why does your income fluctuate?', category: 'Work Costs', categoryCode: 'WC', type: 'text', followUpTo: 'WC_03', interviewSection: '6. Work Expenses' },
+  { id: 'WC_03a', question: 'Why does your income fluctuate?', category: 'Work Costs', categoryCode: 'WC', type: 'text', followUpTo: 'WC_03', interviewSection: '6. Work Expenses' },
 
   // Unpaid Work Time
   { id: 'UWT_01', question: 'Do you have unpaid work time?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'yes_no', interviewSection: '7. Hidden Labor' },
-  { id: 'UWT_01a', question: 'How many hours per day is unpaid work?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'number', followUpTo: 'UWT_01', interviewSection: '7. Hidden Labor' },
+  { id: 'UWT_01a', question: 'How many hours per day you work for unpaid work?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'number', followUpTo: 'UWT_01', interviewSection: '7. Hidden Labor' },
   { id: 'UWT_01b', question: 'What unpaid activities do you do?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'text', followUpTo: 'UWT_01', interviewSection: '7. Hidden Labor' },
   { id: 'PO_02', question: 'What challenges do you face with this work?', category: 'Platform Overview', categoryCode: 'PO', type: 'text', interviewSection: '7. Hidden Labor' },
-  { id: 'UWT_02', question: 'Do you take excessive risks to get work?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'yes_no', interviewSection: '7. Hidden Labor' },
+  { id: 'UWT_02', question: 'Do you take excessive risks to get work done?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'yes_no', interviewSection: '7. Hidden Labor' },
   { id: 'UWT_02a', question: 'Do you take excessive risks to get paid?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'yes_no', interviewSection: '7. Hidden Labor' },
-  { id: 'UWT_02b', question: 'What risks do you take?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'text', followUpTo: 'UWT_02', interviewSection: '7. Hidden Labor' },
+  { id: 'UWT_02b', question: 'What risks do you take while doing the work?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'text', followUpTo: 'UWT_02', interviewSection: '7. Hidden Labor' },
 
   // Contracts & Terms
   { id: 'CT_01', question: 'Do you have an employment contract?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yes_no', interviewSection: '8. Legal Framework' },
-  { id: 'CT_01a', question: 'Do you have terms and conditions?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yes_no', followUpTo: 'CT_01', interviewSection: '8. Legal Framework' },
+  { id: 'CT_01a', question: 'Do you understand the terms and conditions?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yes_no', followUpTo: 'CT_01', interviewSection: '8. Legal Framework' },
   { id: 'CT_02', question: 'Are the terms clear and understandable?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yes_no', interviewSection: '8. Legal Framework' },
   { id: 'CT_03', question: 'Do you have digital access to the contract?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yes_no', interviewSection: '8. Legal Framework' },
   { id: 'CT_04', question: 'Where can you access the contract/terms?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'text', interviewSection: '8. Legal Framework' },
@@ -161,31 +159,23 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'HS_02a', question: 'What steps does the platform take for health risks?', category: 'Health & Safety', categoryCode: 'HS', type: 'text', followUpTo: 'HS_02', interviewSection: '9. Health & Safety' },
   { id: 'HS_03', question: 'Did you receive safety training?', category: 'Health & Safety', categoryCode: 'HS', type: 'yes_no', interviewSection: '9. Health & Safety' },
   { id: 'HS_04', question: 'Does platform provide insurance?', category: 'Health & Safety', categoryCode: 'HS', type: 'yes_no', interviewSection: '9. Health & Safety' },
-  { id: 'HS_04a', question: 'What does the insurance cover?', category: 'Health & Safety', categoryCode: 'HS', type: 'text', followUpTo: 'HS_04', interviewSection: '9. Health & Safety' },
+  { id: 'HS_04a', question: 'Do you pay for insurance?', category: 'Health & Safety', categoryCode: 'HS', type: 'yes_no', interviewSection: '9. Health & Safety' },
+  { id: 'HS_04b', question: 'What insurance do you pay?', category: 'Health & Safety', categoryCode: 'HS', type: 'text', followUpTo: 'HS_04', interviewSection: '9. Health & Safety' },
 
   // Data & Privacy
   { id: 'DP_01', question: 'Do you know what data the platform collects about you?', category: 'Data & Privacy', categoryCode: 'DP', type: 'yes_no', interviewSection: '10. Data & Privacy' },
   { id: 'DP_01a', question: 'What data does the platform collect?', category: 'Data & Privacy', categoryCode: 'DP', type: 'text', followUpTo: 'DP_01', interviewSection: '10. Data & Privacy' },
   { id: 'DP_02', question: 'Does platform inform you about data collection?', category: 'Data & Privacy', categoryCode: 'DP', type: 'yes_no', interviewSection: '10. Data & Privacy' },
-  { id: 'DP_03', question: 'Do you know what measures protect your data?', category: 'Data & Privacy', categoryCode: 'DP', type: 'yes_no', interviewSection: '10. Data & Privacy' },
-  { id: 'DP_03a', question: 'What measures protect your data?', category: 'Data & Privacy', categoryCode: 'DP', type: 'text', followUpTo: 'DP_03', interviewSection: '10. Data & Privacy' },
+  { id: 'DP_03', question: 'Do you know what the measures to protect your data?', category: 'Data & Privacy', categoryCode: 'DP', type: 'yes_no', interviewSection: '10. Data & Privacy' },
+  { id: 'DP_03a', question: 'What measures can you take to protect your data?', category: 'Data & Privacy', categoryCode: 'DP', type: 'text', followUpTo: 'DP_03', interviewSection: '10. Data & Privacy' },
 
   // Platform Management (Support Systems)
   { id: 'PM_03', question: 'Do you know who to contact when something goes wrong?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '11. Support Systems' },
   { id: 'PM_03a', question: 'Who do you contact when something goes wrong?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_03', interviewSection: '11. Support Systems' },
   { id: 'PM_04', question: 'Are there channels for wage issues?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '11. Support Systems' },
-  { 
-    id: 'PM_04a', 
-    question: 'What channels exist for wage issues?', 
-    category: 'Platform Management', 
-    categoryCode: 'PM', 
-    type: 'multiple_choice',
-    options: ['Support via app', 'Telephone', 'Go to the office', 'Contact Supervisor', 'Other'],
-    followUpTo: 'PM_04', 
-    interviewSection: '11. Support Systems'
-  },
+  { id: 'PM_04a', question: 'What channels exist for wage issues?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_04', interviewSection: '11. Support Systems' },
   { id: 'PM_05', question: 'Are there channels for suspension/deactivation issues?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '11. Support Systems' },
-  { id: 'PM_05a', question: 'What channels exist for suspension/deactivation?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_05', interviewSection: '11. Support Systems' },
+  { id: 'PM_05a', question: 'What channels exist for contact if you are suspension/deactivation?', category: 'Platform Management', categoryCode: 'PM', type: 'text', followUpTo: 'PM_05', interviewSection: '11. Support Systems' },
 
   // Support Experience
   { id: 'SE_01', question: 'Have you contacted support before?', category: 'Support Experience', categoryCode: 'SE', type: 'yes_no', interviewSection: '11. Support Systems' },
