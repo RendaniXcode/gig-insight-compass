@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -236,7 +237,7 @@ const QuestionInterface = ({
                     <AlertDialogTitle className="text-2xl font-semibold text-gray-900">
                       Category Saved!
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-lg text-gray-600">
+                    <AlertDialogDescription className="text-center text-sm text-gray-500 font-light">
                       {isLastCategory() 
                         ? "All categories completed!"
                         : `Continue to ${getNextCategoryName()}`
