@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -12,6 +11,7 @@ import { BarChart3, FileText, Home } from "lucide-react";
 const Index = () => {
   const [currentView, setCurrentView] = useState<'categories' | 'questions' | 'dashboard'>('categories');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [pendingCategoryTransition, setPendingCategoryTransition] = useState<string | null>(null);
   const [session, setSession] = useState<InterviewSession>({
     id: `interview_${Date.now()}`,
     platformName: '',
@@ -24,6 +24,25 @@ const Index = () => {
     startTime: new Date(),
     lastUpdated: new Date()
   });
+
+  // Handle category navigation after state update
+  useEffect(() => {
+    if (pendingCategoryTransition) {
+      const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === pendingCategoryTransition);
+      if (currentIndex < SURVEY_CATEGORIES.length - 1) {
+        const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
+        setSelectedCategory(nextCategory.code);
+        setCurrentView('questions');
+        toast.info(`Moving to: ${nextCategory.name}`);
+      } else {
+        // All categories completed, go to dashboard
+        setCurrentView('dashboard');
+        setSelectedCategory(null);
+        toast.success("All categories completed! Check your dashboard.");
+      }
+      setPendingCategoryTransition(null);
+    }
+  }, [session.completedCategories, pendingCategoryTransition]);
 
   // Load session from localStorage on mount
   useEffect(() => {
@@ -100,7 +119,7 @@ const Index = () => {
   };
 
   const handleCategorySaveAndNext = (currentCategoryCode: string) => {
-    // Mark current category as completed
+    // Mark current category as completed and trigger navigation
     setSession(prev => {
       const updatedSession = {
         ...prev,
@@ -133,19 +152,8 @@ const Index = () => {
     const categoryName = SURVEY_CATEGORIES.find(c => c.code === currentCategoryCode)?.name;
     toast.success(`${categoryName} saved successfully!`);
 
-    // Find next category
-    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === currentCategoryCode);
-    if (currentIndex < SURVEY_CATEGORIES.length - 1) {
-      const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
-      setSelectedCategory(nextCategory.code);
-      toast.info(`Moving to: ${nextCategory.name}`);
-      // Stay in questions view, just switch category
-    } else {
-      // All categories completed, go to dashboard
-      setCurrentView('dashboard');
-      setSelectedCategory(null);
-      toast.success("All categories completed! Check your dashboard.");
-    }
+    // Set pending transition to trigger navigation after state update
+    setPendingCategoryTransition(currentCategoryCode);
   };
 
   const handleExport = () => {
