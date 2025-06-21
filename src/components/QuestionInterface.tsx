@@ -111,7 +111,28 @@ const QuestionInterface = ({
           />
         );
       
-      case 'dropdown':
+      case 'number':
+        return (
+          <Input
+            type="number"
+            placeholder="Enter a number..."
+            value={currentAnswer}
+            onChange={(e) => handleAnswerChange(e.target.value)}
+            className="text-base md:text-lg"
+          />
+        );
+      
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={currentAnswer}
+            onChange={(e) => handleAnswerChange(e.target.value)}
+            className="text-base md:text-lg"
+          />
+        );
+      
+      case 'multiple_choice':
         return (
           <Select value={currentAnswer} onValueChange={handleAnswerChange}>
             <SelectTrigger className="text-base md:text-lg">
@@ -127,7 +148,7 @@ const QuestionInterface = ({
           </Select>
         );
       
-      case 'yesno':
+      case 'yes_no':
         return (
           <RadioGroup value={currentAnswer} onValueChange={handleAnswerChange} className="flex flex-col space-y-3">
             <div className="flex items-center space-x-2">
@@ -141,6 +162,7 @@ const QuestionInterface = ({
           </RadioGroup>
         );
       
+      case 'textarea':
       default:
         return (
           <Textarea
@@ -291,4 +313,3 @@ const QuestionInterface = ({
 };
 
 export default QuestionInterface;
-
