@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, Clock, CheckCircle } from "lucide-react";
+import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -47,6 +47,17 @@ const SurveyDashboard = ({ session, onExport }: SurveyDashboardProps) => {
     return `${diffMins}m`;
   };
 
+  const getStatusBadge = () => {
+    switch (session.status) {
+      case 'completed':
+        return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>;
+      case 'in-progress':
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600">In Progress</Badge>;
+      default:
+        return <Badge className="bg-gray-500 hover:bg-gray-600">Not Started</Badge>;
+    }
+  };
+
   const getCategoryStats = () => {
     return SURVEY_CATEGORIES.map(category => {
       const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === category.code);
@@ -69,6 +80,43 @@ const SurveyDashboard = ({ session, onExport }: SurveyDashboardProps) => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Interview Dashboard</h1>
         <p className="text-gray-600">Survey progress and session overview</p>
       </div>
+
+      {/* Interview Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            Interview Status
+            {getStatusBadge()}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-blue-500" />
+              <div>
+                <label className="text-sm font-medium text-gray-500">Interviewer</label>
+                <p className="text-lg font-semibold">{session.interviewer}</p>
+              </div>
+            </div>
+            {session.interviewerEmail && (
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-blue-500" />
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-lg font-semibold">{session.interviewerEmail}</p>
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <Calendar className="h-5 w-5 text-blue-500" />
+              <div>
+                <label className="text-sm font-medium text-gray-500">Date</label>
+                <p className="text-lg font-semibold">{session.interviewDate}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Session Info */}
       <Card>

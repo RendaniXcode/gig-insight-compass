@@ -1,3 +1,4 @@
+
 export interface Question {
   id: string;
   question: string;
@@ -19,6 +20,9 @@ export interface InterviewSession {
   employmentType: string;
   interviewCode: string;
   interviewDate: string;
+  interviewer: string;
+  interviewerEmail?: string;
+  status: 'not-started' | 'in-progress' | 'completed';
   responses: SurveyResponse[];
   currentQuestionIndex: number;
   completedCategories: string[];

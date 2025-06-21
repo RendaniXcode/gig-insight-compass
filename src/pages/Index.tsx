@@ -3,13 +3,14 @@ import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
 import QuestionInterface from "../components/QuestionInterface";
 import SurveyDashboard from "../components/SurveyDashboard";
+import InterviewerSetup from "../components/InterviewerSetup";
 import { InterviewSession, SurveyResponse, SURVEY_CATEGORIES } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { Button } from "@/components/ui/button";
 import { BarChart3, FileText, Home } from "lucide-react";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'categories' | 'questions' | 'dashboard'>('categories');
+  const [currentView, setCurrentView] = useState<'setup' | 'categories' | 'questions' | 'dashboard'>('setup');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [session, setSession] = useState<InterviewSession>({
     id: `interview_${Date.now()}`,
@@ -17,6 +18,9 @@ const Index = () => {
     employmentType: '',
     interviewCode: '',
     interviewDate: new Date().toISOString().split('T')[0],
+    interviewer: '',
+    interviewerEmail: '',
+    status: 'not-started',
     responses: [],
     currentQuestionIndex: 0,
     completedCategories: [],
@@ -30,11 +34,17 @@ const Index = () => {
     if (savedSession) {
       try {
         const parsed = JSON.parse(savedSession);
-        setSession({
+        const restoredSession = {
           ...parsed,
           startTime: new Date(parsed.startTime),
           lastUpdated: new Date(parsed.lastUpdated)
-        });
+        };
+        setSession(restoredSession);
+        
+        // If interviewer is set, skip setup
+        if (restoredSession.interviewer) {
+          setCurrentView('categories');
+        }
       } catch (error) {
         console.error('Error loading saved session:', error);
       }
@@ -45,6 +55,19 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('survey_session', JSON.stringify(session));
   }, [session]);
+
+  const handleInterviewerSetup = (interviewer: string, email?: string) => {
+    setSession(prev => ({
+      ...prev,
+      interviewer,
+      interviewerEmail: email,
+      status: 'in-progress',
+      startTime: new Date(),
+      lastUpdated: new Date()
+    }));
+    setCurrentView('categories');
+    toast.success(`Interview session started by ${interviewer}`);
+  };
 
   const handleCategorySelect = (categoryCode: string) => {
     setSelectedCategory(categoryCode);
@@ -84,6 +107,12 @@ const Index = () => {
         if (!prev.completedCategories.includes(selectedCategory)) {
           updates.completedCategories = [...prev.completedCategories, selectedCategory];
         }
+      }
+
+      // Check if all categories are completed
+      const totalCompleted = updates.completedCategories || prev.completedCategories;
+      if (totalCompleted.length === SURVEY_CATEGORIES.length) {
+        updates.status = 'completed';
       }
 
       return {
@@ -152,6 +181,7 @@ const Index = () => {
     } else {
       // All categories completed, go to dashboard
       console.log("All categories completed, going to dashboard");
+      setSession(prev => ({ ...prev, status: 'completed' }));
       setCurrentView('dashboard');
       setSelectedCategory(null);
       toast.success("All categories completed! Check your dashboard.");
@@ -166,6 +196,9 @@ const Index = () => {
         employmentType: session.employmentType,
         interviewCode: session.interviewCode,
         interviewDate: session.interviewDate,
+        interviewer: session.interviewer,
+        interviewerEmail: session.interviewerEmail,
+        status: session.status,
         startTime: session.startTime,
         lastUpdated: session.lastUpdated,
         duration: session.lastUpdated.getTime() - session.startTime.getTime()
@@ -200,6 +233,15 @@ const Index = () => {
     
     toast.success("Survey data exported successfully!");
   };
+
+  // Show setup if no interviewer is set
+  if (currentView === 'setup' || !session.interviewer) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <InterviewerSetup onSetup={handleInterviewerSetup} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-2 md:px-4">
