@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -37,13 +38,15 @@ const Index = () => {
         const restoredSession = {
           ...parsed,
           startTime: new Date(parsed.startTime),
+          endTime: parsed.endTime ? new Date(parsed.endTime) : undefined,
           lastUpdated: new Date(parsed.lastUpdated)
         };
         setSession(restoredSession);
         
         // If interviewer is set, skip setup
         if (restoredSession.interviewer) {
-          setCurrentView('categories');
+          // If completed, show dashboard; otherwise show categories
+          setCurrentView(restoredSession.status === 'completed' ? 'dashboard' : 'categories');
         }
       } catch (error) {
         console.error('Error loading saved session:', error);
@@ -57,16 +60,20 @@ const Index = () => {
   }, [session]);
 
   const handleInterviewerSetup = (interviewer: string, email?: string) => {
+    const startTime = new Date();
     setSession(prev => ({
       ...prev,
       interviewer,
       interviewerEmail: email,
       status: 'in-progress',
-      startTime: new Date(),
-      lastUpdated: new Date()
+      startTime,
+      lastUpdated: startTime
     }));
     setCurrentView('categories');
     toast.success(`Interview session started by ${interviewer}`);
+    
+    // Here you would normally save to database
+    console.log('Interview started at:', startTime.toISOString());
   };
 
   const handleCategorySelect = (categoryCode: string) => {
@@ -112,7 +119,13 @@ const Index = () => {
       // Check if all categories are completed
       const totalCompleted = updates.completedCategories || prev.completedCategories;
       if (totalCompleted.length === SURVEY_CATEGORIES.length) {
+        const endTime = new Date();
         updates.status = 'completed';
+        updates.endTime = endTime;
+        
+        // Here you would normally save end time to database
+        console.log('Interview completed at:', endTime.toISOString());
+        toast.success('Interview completed successfully!');
       }
 
       return {
@@ -181,11 +194,29 @@ const Index = () => {
     } else {
       // All categories completed, go to dashboard
       console.log("All categories completed, going to dashboard");
-      setSession(prev => ({ ...prev, status: 'completed' }));
+      const endTime = new Date();
+      setSession(prev => ({ 
+        ...prev, 
+        status: 'completed',
+        endTime
+      }));
       setCurrentView('dashboard');
       setSelectedCategory(null);
+      
+      // Here you would normally save end time to database
+      console.log('Interview completed at:', endTime.toISOString());
       toast.success("All categories completed! Check your dashboard.");
     }
+  };
+
+  const handleContinueInterview = () => {
+    if (session.status === 'completed') {
+      toast.info("This interview is already completed and cannot be edited.");
+      return;
+    }
+    
+    setCurrentView('categories');
+    toast.info("Continuing interview where you left off...");
   };
 
   const handleExport = () => {
@@ -200,8 +231,9 @@ const Index = () => {
         interviewerEmail: session.interviewerEmail,
         status: session.status,
         startTime: session.startTime,
+        endTime: session.endTime,
         lastUpdated: session.lastUpdated,
-        duration: session.lastUpdated.getTime() - session.startTime.getTime()
+        duration: (session.endTime || session.lastUpdated).getTime() - session.startTime.getTime()
       },
       responses: session.responses.map(response => {
         const question = SURVEY_QUESTIONS.find(q => q.id === response.questionId);
@@ -253,6 +285,7 @@ const Index = () => {
               variant={currentView === 'categories' ? 'default' : 'outline'}
               onClick={() => setCurrentView('categories')}
               className="flex items-center gap-2 whitespace-nowrap"
+              disabled={session.status === 'completed'}
             >
               <Home className="h-4 w-4" />
               Categories
@@ -300,6 +333,7 @@ const Index = () => {
           <SurveyDashboard
             session={session}
             onExport={handleExport}
+            onContinueInterview={handleContinueInterview}
           />
         )}
       </div>

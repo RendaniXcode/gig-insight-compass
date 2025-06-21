@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar } from "lucide-react";
+import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -12,9 +11,10 @@ import { SURVEY_CATEGORIES } from "../types/survey";
 interface SurveyDashboardProps {
   session: InterviewSession;
   onExport: () => void;
+  onContinueInterview?: () => void;
 }
 
-const SurveyDashboard = ({ session, onExport }: SurveyDashboardProps) => {
+const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashboardProps) => {
   const [stats, setStats] = useState({
     totalQuestions: 0,
     answeredQuestions: 0,
@@ -36,8 +36,9 @@ const SurveyDashboard = ({ session, onExport }: SurveyDashboardProps) => {
     });
   }, [session]);
 
-  const formatDuration = (startTime: Date, endTime: Date) => {
-    const diffMs = endTime.getTime() - startTime.getTime();
+  const formatDuration = (startTime: Date, endTime?: Date) => {
+    const end = endTime || new Date();
+    const diffMs = end.getTime() - startTime.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     
@@ -52,7 +53,17 @@ const SurveyDashboard = ({ session, onExport }: SurveyDashboardProps) => {
       case 'completed':
         return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>;
       case 'in-progress':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">In Progress</Badge>;
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onContinueInterview}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 hover:border-yellow-600 flex items-center gap-1"
+          >
+            <Play className="h-3 w-3" />
+            In Progress - Continue
+          </Button>
+        );
       default:
         return <Badge className="bg-gray-500 hover:bg-gray-600">Not Started</Badge>;
     }
@@ -144,9 +155,23 @@ const SurveyDashboard = ({ session, onExport }: SurveyDashboardProps) => {
               <label className="text-sm font-medium text-gray-500">Duration</label>
               <p className="text-lg font-semibold flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {formatDuration(session.startTime, session.lastUpdated)}
+                {formatDuration(session.startTime, session.endTime)}
               </p>
             </div>
+          </div>
+          
+          {/* Time Tracking Details */}
+          <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-500">Started At</label>
+              <p className="text-sm">{session.startTime.toLocaleString()}</p>
+            </div>
+            {session.endTime && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Completed At</label>
+                <p className="text-sm">{session.endTime.toLocaleString()}</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

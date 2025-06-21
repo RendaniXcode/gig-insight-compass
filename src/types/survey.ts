@@ -27,6 +27,7 @@ export interface InterviewSession {
   currentQuestionIndex: number;
   completedCategories: string[];
   startTime: Date;
+  endTime?: Date;
   lastUpdated: Date;
 }
 
