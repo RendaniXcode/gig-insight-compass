@@ -8,7 +8,8 @@ import InterviewerSetup from "../components/InterviewerSetup";
 import { InterviewSession, SurveyResponse, SURVEY_CATEGORIES } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { Button } from "@/components/ui/button";
-import { BarChart3, FileText, Home } from "lucide-react";
+import { BarChart3, FileText, Home, Plus, ArrowLeft, ArrowRight } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<'setup' | 'categories' | 'questions' | 'dashboard'>('setup');
@@ -266,6 +267,56 @@ const Index = () => {
     toast.success("Survey data exported successfully!");
   };
 
+  const handleStartNewInterview = () => {
+    // Reset session and start fresh
+    const newSession: InterviewSession = {
+      id: `interview_${Date.now()}`,
+      platformName: '',
+      employmentType: '',
+      interviewCode: '',
+      interviewDate: new Date().toISOString().split('T')[0],
+      interviewer: '',
+      interviewerEmail: '',
+      status: 'not-started',
+      responses: [],
+      currentQuestionIndex: 0,
+      completedCategories: [],
+      startTime: new Date(),
+      lastUpdated: new Date()
+    };
+    
+    setSession(newSession);
+    setSelectedCategory(null);
+    setCurrentView('setup');
+    
+    // Clear localStorage
+    localStorage.removeItem('survey_session');
+    
+    toast.success("Starting new interview session");
+  };
+
+  const navigateToPreviousCategory = () => {
+    if (!selectedCategory) return;
+    
+    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === selectedCategory);
+    if (currentIndex > 0) {
+      const previousCategory = SURVEY_CATEGORIES[currentIndex - 1];
+      setSelectedCategory(previousCategory.code);
+      toast.info(`Moved to: ${previousCategory.name}`);
+    }
+  };
+
+  const navigateToNextCategory = () => {
+    if (!selectedCategory) return;
+    
+    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === selectedCategory);
+    if (currentIndex < SURVEY_CATEGORIES.length - 1) {
+      const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
+      setSelectedCategory(nextCategory.code);
+      toast.info(`Moved to: ${nextCategory.name}`);
+    }
+  };
+
   // Show setup if no interviewer is set
   if (currentView === 'setup' || !session.interviewer) {
     return (
@@ -277,10 +328,37 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-2 md:px-4">
-      {/* Navigation */}
+      {/* Enhanced Navigation */}
       <div className="max-w-6xl mx-auto mb-4 md:mb-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 whitespace-nowrap border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Interview
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Start New Interview?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will clear the current session and start a completely new interview. 
+                    Make sure you've exported any data you need from the current session.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleStartNewInterview}>
+                    Start New Interview
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            
             <Button
               variant={currentView === 'categories' ? 'default' : 'outline'}
               onClick={() => setCurrentView('categories')}
@@ -306,6 +384,35 @@ const Index = () => {
             </div>
           )}
         </div>
+
+        {/* Category Navigation (only show when in questions view) */}
+        {currentView === 'questions' && selectedCategory && (
+          <div className="flex items-center justify-between mt-4 p-3 bg-white rounded-lg shadow-sm">
+            <Button
+              variant="outline"
+              onClick={navigateToPreviousCategory}
+              disabled={SURVEY_CATEGORIES.findIndex(c => c.code === selectedCategory) === 0}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Previous Category
+            </Button>
+            
+            <div className="text-sm font-medium text-gray-700">
+              {SURVEY_CATEGORIES.find(c => c.code === selectedCategory)?.name}
+            </div>
+            
+            <Button
+              variant="outline"
+              onClick={navigateToNextCategory}
+              disabled={SURVEY_CATEGORIES.findIndex(c => c.code === selectedCategory) === SURVEY_CATEGORIES.length - 1}
+              className="flex items-center gap-2"
+            >
+              Next Category
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -326,6 +433,7 @@ const Index = () => {
             onBack={() => setCurrentView('categories')}
             onSave={handleSave}
             onCategorySaveAndNext={handleCategorySaveAndNext}
+            onMoveToNextCategory={handleMoveToNextCategory}
           />
         )}
         
