@@ -102,14 +102,14 @@ const Index = () => {
   const handleCategorySaveAndNext = (currentCategoryCode: string) => {
     // Mark current category as completed
     setSession(prev => {
-      if (!prev.completedCategories.includes(currentCategoryCode)) {
-        return {
-          ...prev,
-          completedCategories: [...prev.completedCategories, currentCategoryCode],
-          lastUpdated: new Date()
-        };
-      }
-      return prev;
+      const updatedSession = {
+        ...prev,
+        completedCategories: prev.completedCategories.includes(currentCategoryCode) 
+          ? prev.completedCategories 
+          : [...prev.completedCategories, currentCategoryCode],
+        lastUpdated: new Date()
+      };
+      return updatedSession;
     });
 
     // Save to database (simulated with localStorage for now)
@@ -130,7 +130,8 @@ const Index = () => {
 
     localStorage.setItem(`category_${currentCategoryCode}_${session.id}`, JSON.stringify(saveData));
     
-    toast.success(`${SURVEY_CATEGORIES.find(c => c.code === currentCategoryCode)?.name} saved successfully!`);
+    const categoryName = SURVEY_CATEGORIES.find(c => c.code === currentCategoryCode)?.name;
+    toast.success(`${categoryName} saved successfully!`);
 
     // Find next category
     const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === currentCategoryCode);
@@ -138,9 +139,11 @@ const Index = () => {
       const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
       setSelectedCategory(nextCategory.code);
       toast.info(`Moving to: ${nextCategory.name}`);
+      // Stay in questions view, just switch category
     } else {
       // All categories completed, go to dashboard
       setCurrentView('dashboard');
+      setSelectedCategory(null);
       toast.success("All categories completed! Check your dashboard.");
     }
   };
