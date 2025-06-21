@@ -142,15 +142,15 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-2 md:px-4">
       {/* Navigation */}
-      <div className="max-w-6xl mx-auto mb-6">
-        <div className="flex justify-between items-center">
-          <div className="flex gap-2">
+      <div className="max-w-6xl mx-auto mb-4 md:mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
             <Button
               variant={currentView === 'categories' ? 'default' : 'outline'}
               onClick={() => setCurrentView('categories')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 whitespace-nowrap"
             >
               <Home className="h-4 w-4" />
               Categories
@@ -158,7 +158,7 @@ const Index = () => {
             <Button
               variant={currentView === 'dashboard' ? 'default' : 'outline'}
               onClick={() => setCurrentView('dashboard')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 whitespace-nowrap"
             >
               <BarChart3 className="h-4 w-4" />
               Dashboard
@@ -166,7 +166,7 @@ const Index = () => {
           </div>
           
           {session.responses.length > 0 && (
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 text-center sm:text-right">
               Progress: {Math.round((session.responses.filter(r => r.answer.trim()).length / SURVEY_QUESTIONS.length) * 100)}%
             </div>
           )}

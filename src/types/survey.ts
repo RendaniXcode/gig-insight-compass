@@ -1,9 +1,10 @@
-
 export interface Question {
   id: string;
   question: string;
   category: string;
   categoryCode: string;
+  type?: 'text' | 'textarea' | 'dropdown' | 'yesno';
+  options?: string[];
 }
 
 export interface SurveyResponse {
