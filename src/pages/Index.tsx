@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
 import QuestionInterface from "../components/QuestionInterface";
 import SurveyDashboard from "../components/SurveyDashboard";
-import { InterviewSession, SurveyResponse } from "../types/survey";
+import { InterviewSession, SurveyResponse, SURVEY_CATEGORIES } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { Button } from "@/components/ui/button";
 import { BarChart3, FileText, Home } from "lucide-react";
