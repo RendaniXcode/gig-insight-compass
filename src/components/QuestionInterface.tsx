@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -230,11 +231,11 @@ const QuestionInterface = ({
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="sm:max-w-md text-center">
-                  <AlertDialogHeader className="space-y-4">
+                  <AlertDialogHeader className="space-y-4 text-center">
                     <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                       <CheckCircle className="h-8 w-8 text-green-600" />
                     </div>
-                    <AlertDialogTitle className="text-2xl font-semibold text-gray-900">
+                    <AlertDialogTitle className="text-2xl font-semibold text-gray-900 text-center">
                       Category Saved!
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-center text-sm text-gray-500 font-light">
@@ -247,7 +248,7 @@ const QuestionInterface = ({
                   <AlertDialogFooter className="flex justify-center">
                     <AlertDialogAction 
                       onClick={handleContinueToNext}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 text-lg"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 text-lg mx-auto"
                     >
                       {isLastCategory() ? "View Dashboard" : "Continue"}
                     </AlertDialogAction>
@@ -290,3 +291,4 @@ const QuestionInterface = ({
 };
 
 export default QuestionInterface;
+
