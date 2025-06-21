@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -7,7 +6,7 @@ import SurveyDashboard from "../components/SurveyDashboard";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { Button } from "@/components/ui/button";
-import { BarChart3, FileText, Home }
+import { BarChart3, FileText, Home } from "lucide-react";
 
 const Index = () => {
   const [currentView, setCurrentView] = useState<'categories' | 'questions' | 'dashboard'>('categories');
