@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play } fr
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
+import { Separator } from "@/components/ui/separator";
 
 interface SurveyDashboardProps {
   session: InterviewSession;
@@ -92,16 +94,20 @@ const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashb
         <p className="text-gray-600">Survey progress and session overview</p>
       </div>
 
-      {/* Interview Status */}
+      {/* Combined Interview Status and Session Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Interview Status
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Interview Status
+            </CardTitle>
             {getStatusBadge()}
-          </CardTitle>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardContent className="space-y-6">
+          {/* Interviewer Information */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3">
               <User className="h-5 w-5 text-blue-500" />
               <div>
@@ -126,18 +132,10 @@ const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashb
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Session Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Session Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          <Separator />
+
+          {/* Session Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-500">Platform</label>
@@ -161,7 +159,7 @@ const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashb
           </div>
           
           {/* Time Tracking Details */}
-          <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
             <div>
               <label className="text-sm font-medium text-gray-500">Started At</label>
               <p className="text-sm">{session.startTime.toLocaleString()}</p>
