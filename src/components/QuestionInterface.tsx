@@ -228,32 +228,31 @@ const QuestionInterface = ({
                     {hasAnsweredCurrentQuestion ? "Save & Complete Category" : "Answer Question to Continue"}
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                <AlertDialogContent className="sm:max-w-md">
+                  <AlertDialogHeader className="text-center space-y-4">
+                    <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <AlertDialogTitle className="text-xl font-semibold text-gray-900">
                       Category Saved Successfully!
                     </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Great work! You've completed the <strong>{category.name}</strong> category. 
+                    <AlertDialogDescription className="text-center text-gray-600 space-y-3">
+                      <p>Great work! You've completed the <strong>{category.name}</strong> category.</p>
                       {!isLastCategory() ? (
-                        <>
-                          <br /><br />
-                          Ready to continue to the next category: <strong>{getNextCategoryName()}</strong>?
-                        </>
+                        <p>Ready to continue to the next category: <strong>{getNextCategoryName()}</strong>?</p>
                       ) : (
-                        <>
-                          <br /><br />
-                          You've completed all categories! Ready to view your dashboard?
-                        </>
+                        <p>You've completed all categories! Ready to view your dashboard?</p>
                       )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setShowSuccessDialog(false)}>
+                  <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+                    <AlertDialogCancel className="sm:mr-2">
                       Stay Here
                     </AlertDialogCancel>
-                    <AlertDialogAction onClick={handleContinueToNext}>
+                    <AlertDialogAction 
+                      onClick={handleContinueToNext}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
                       {isLastCategory() ? "Go to Dashboard" : `Continue to ${getNextCategoryName()}`}
                     </AlertDialogAction>
                   </AlertDialogFooter>
