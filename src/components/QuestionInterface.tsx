@@ -39,6 +39,7 @@ const QuestionInterface = ({
   
   const progress = ((currentQuestionIndex + 1) / categoryQuestions.length) * 100;
   const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
+  const hasAnsweredCurrentQuestion = currentAnswer && currentAnswer.trim() !== "";
 
   useEffect(() => {
     if (currentQuestion) {
@@ -194,10 +195,11 @@ const QuestionInterface = ({
             ) : (
               <Button
                 onClick={handleSaveAndNext}
-                className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                disabled={!hasAnsweredCurrentQuestion}
+                className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
               >
                 <Database className="h-4 w-4" />
-                Save & Continue to Next Category
+                {hasAnsweredCurrentQuestion ? "Save & Continue to Next Category" : "Answer Question to Continue"}
               </Button>
             )}
           </div>
