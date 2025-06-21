@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle } from "lucide-react";
 import { Question, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
@@ -228,32 +228,27 @@ const QuestionInterface = ({
                     {hasAnsweredCurrentQuestion ? "Save & Complete Category" : "Answer Question to Continue"}
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="sm:max-w-md">
-                  <AlertDialogHeader className="text-center space-y-4">
-                    <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
+                <AlertDialogContent className="sm:max-w-md text-center">
+                  <AlertDialogHeader className="space-y-4">
+                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="h-8 w-8 text-green-600" />
                     </div>
-                    <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-                      Category Saved Successfully!
+                    <AlertDialogTitle className="text-2xl font-semibold text-gray-900">
+                      Category Saved!
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-center text-gray-600 space-y-3">
-                      <p>Great work! You've completed the <strong>{category.name}</strong> category.</p>
-                      {!isLastCategory() ? (
-                        <p>Ready to continue to the next category: <strong>{getNextCategoryName()}</strong>?</p>
-                      ) : (
-                        <p>You've completed all categories! Ready to view your dashboard?</p>
-                      )}
+                    <AlertDialogDescription className="text-lg text-gray-600">
+                      {isLastCategory() 
+                        ? "All categories completed!"
+                        : `Continue to ${getNextCategoryName()}`
+                      }
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-                    <AlertDialogCancel className="sm:mr-2">
-                      Stay Here
-                    </AlertDialogCancel>
+                  <AlertDialogFooter className="flex justify-center">
                     <AlertDialogAction 
                       onClick={handleContinueToNext}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 text-lg"
                     >
-                      {isLastCategory() ? "Go to Dashboard" : `Continue to ${getNextCategoryName()}`}
+                      {isLastCategory() ? "View Dashboard" : "Continue"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
