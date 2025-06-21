@@ -99,7 +99,7 @@ const Index = () => {
   };
 
   const handleCategorySaveAndNext = (currentCategoryCode: string) => {
-    console.log("Starting category save and next for:", currentCategoryCode);
+    console.log("Starting category save for:", currentCategoryCode);
     
     // Mark current category as completed
     setSession(prev => {
@@ -120,7 +120,6 @@ const Index = () => {
       return question?.categoryCode === currentCategoryCode;
     });
 
-    // Simulate database save
     const saveData = {
       categoryCode: currentCategoryCode,
       sessionId: session.id,
@@ -133,30 +132,29 @@ const Index = () => {
     localStorage.setItem(`category_${currentCategoryCode}_${session.id}`, JSON.stringify(saveData));
     
     const categoryName = SURVEY_CATEGORIES.find(c => c.code === currentCategoryCode)?.name;
+    console.log("Category saved successfully:", categoryName);
+    
+    // Just show success message - no auto navigation
     toast.success(`${categoryName} saved successfully!`);
+  };
 
-    // Navigate to next category immediately
+  const handleMoveToNextCategory = (currentCategoryCode: string) => {
     const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === currentCategoryCode);
-    console.log("Current category index:", currentIndex);
+    console.log("Moving to next category from index:", currentIndex);
     
     if (currentIndex < SURVEY_CATEGORIES.length - 1) {
       const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
       console.log("Moving to next category:", nextCategory);
       
-      // Use setTimeout to ensure state update has completed
-      setTimeout(() => {
-        setSelectedCategory(nextCategory.code);
-        setCurrentView('questions');
-        toast.info(`Moving to: ${nextCategory.name}`);
-      }, 100);
+      setSelectedCategory(nextCategory.code);
+      setCurrentView('questions');
+      toast.info(`Moving to: ${nextCategory.name}`);
     } else {
       // All categories completed, go to dashboard
       console.log("All categories completed, going to dashboard");
-      setTimeout(() => {
-        setCurrentView('dashboard');
-        setSelectedCategory(null);
-        toast.success("All categories completed! Check your dashboard.");
-      }, 100);
+      setCurrentView('dashboard');
+      setSelectedCategory(null);
+      toast.success("All categories completed! Check your dashboard.");
     }
   };
 

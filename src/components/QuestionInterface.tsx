@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, ArrowRight, Save, Home, Database } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle } from "lucide-react";
 import { Question, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -20,6 +20,7 @@ interface QuestionInterfaceProps {
   onBack: () => void;
   onSave: () => void;
   onCategorySaveAndNext: (categoryCode: string) => void;
+  onMoveToNextCategory?: (categoryCode: string) => void;
 }
 
 const QuestionInterface = ({ 
@@ -28,10 +29,12 @@ const QuestionInterface = ({
   onResponseChange, 
   onBack,
   onSave,
-  onCategorySaveAndNext
+  onCategorySaveAndNext,
+  onMoveToNextCategory
 }: QuestionInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState("");
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
   const currentQuestion = categoryQuestions[currentQuestionIndex];
@@ -69,6 +72,27 @@ const QuestionInterface = ({
 
   const handleSaveAndNext = () => {
     onCategorySaveAndNext(categoryCode);
+    setShowSuccessDialog(true);
+  };
+
+  const handleContinueToNext = () => {
+    setShowSuccessDialog(false);
+    if (onMoveToNextCategory) {
+      onMoveToNextCategory(categoryCode);
+    }
+  };
+
+  const getNextCategoryName = () => {
+    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode);
+    if (currentIndex < SURVEY_CATEGORIES.length - 1) {
+      return SURVEY_CATEGORIES[currentIndex + 1].name;
+    }
+    return "Dashboard";
+  };
+
+  const isLastCategory = () => {
+    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode);
+    return currentIndex === SURVEY_CATEGORIES.length - 1;
   };
 
   const renderQuestionInput = () => {
@@ -193,14 +217,48 @@ const QuestionInterface = ({
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button
-                onClick={handleSaveAndNext}
-                disabled={!hasAnsweredCurrentQuestion}
-                className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
-              >
-                <Database className="h-4 w-4" />
-                {hasAnsweredCurrentQuestion ? "Save & Continue to Next Category" : "Answer Question to Continue"}
-              </Button>
+              <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    onClick={handleSaveAndNext}
+                    disabled={!hasAnsweredCurrentQuestion}
+                    className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+                  >
+                    <Database className="h-4 w-4" />
+                    {hasAnsweredCurrentQuestion ? "Save & Complete Category" : "Answer Question to Continue"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      Category Saved Successfully!
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Great work! You've completed the <strong>{category.name}</strong> category. 
+                      {!isLastCategory() ? (
+                        <>
+                          <br /><br />
+                          Ready to continue to the next category: <strong>{getNextCategoryName()}</strong>?
+                        </>
+                      ) : (
+                        <>
+                          <br /><br />
+                          You've completed all categories! Ready to view your dashboard?
+                        </>
+                      )}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => setShowSuccessDialog(false)}>
+                      Stay Here
+                    </AlertDialogCancel>
+                    <AlertDialogAction onClick={handleContinueToNext}>
+                      {isLastCategory() ? "Go to Dashboard" : `Continue to ${getNextCategoryName()}`}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         </CardContent>
