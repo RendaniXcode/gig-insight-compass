@@ -17,11 +17,19 @@ export const SURVEY_QUESTIONS: Question[] = [
   // Personal Background
   { 
     id: 'PB_01', 
-    question: 'Age and highest education level', 
+    question: 'What is your age?', 
     category: 'Personal Background', 
     categoryCode: 'PB', 
     type: 'dropdown',
-    options: ['18-25, High School', '18-25, College/University', '26-35, High School', '26-35, College/University', '36-45, High School', '36-45, College/University', '46-55, High School', '46-55, College/University', '55+, High School', '55+, College/University', 'Prefer not to say']
+    options: ['18-25', '26-35', '36-45', '46-55', '56-65', '65+', 'Prefer not to say']
+  },
+  { 
+    id: 'PB_02', 
+    question: 'What is your highest education level?', 
+    category: 'Personal Background', 
+    categoryCode: 'PB', 
+    type: 'dropdown',
+    options: ['Elementary School', 'High School', 'Some College', 'Bachelor\'s Degree', 'Master\'s Degree', 'Doctorate', 'Trade/Technical School', 'Other', 'Prefer not to say']
   },
 
   // Platform Introduction
@@ -31,7 +39,7 @@ export const SURVEY_QUESTIONS: Question[] = [
     category: 'Platform Introduction', 
     categoryCode: 'PI',
     type: 'dropdown',
-    options: ['Less than 1 month', '1-3 months', '3-6 months', '6-12 months', '1-2 years', '2+ years']
+    options: ['1 month', '2 months', '3 months', '4 months', '5 months', '6 months', '7 months', '8 months', '9 months', '10 months', '11 months', '12 months', '1 year', '2 years', '3 years', '4 years', '5+ years']
   },
 
   // Platform Overview
@@ -70,14 +78,72 @@ export const SURVEY_QUESTIONS: Question[] = [
     type: 'dropdown',
     options: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'After each task', 'Other']
   },
-  { id: 'PE_04', question: 'Is payment always on time? Any delays?', category: 'Payment & Earnings', categoryCode: 'PE', type: 'yesno' },
-  { id: 'PE_05', question: 'Is payment always made in full? Any deductions?', category: 'Payment & Earnings', categoryCode: 'PE', type: 'yesno' },
-  { id: 'PE_06', question: 'How do you receive payment? Can you choose currency?', category: 'Payment & Earnings', categoryCode: 'PE', type: 'textarea' },
+  { 
+    id: 'PE_04', 
+    question: 'Is payment always on time?', 
+    category: 'Payment & Earnings', 
+    categoryCode: 'PE', 
+    type: 'dropdown',
+    options: ['Always on time', 'Usually on time', 'Sometimes delayed', 'Often delayed', 'Never on time']
+  },
+  { 
+    id: 'PE_05', 
+    question: 'Are there any payment delays? If yes, how often?', 
+    category: 'Payment & Earnings', 
+    categoryCode: 'PE', 
+    type: 'dropdown',
+    options: ['No delays', 'Rare delays', 'Occasional delays', 'Frequent delays', 'Always delayed']
+  },
+  { 
+    id: 'PE_06', 
+    question: 'Is payment always made in full?', 
+    category: 'Payment & Earnings', 
+    categoryCode: 'PE', 
+    type: 'dropdown',
+    options: ['Always full payment', 'Usually full payment', 'Sometimes deductions', 'Often deductions', 'Never full payment']
+  },
+  { 
+    id: 'PE_07', 
+    question: 'What types of deductions are made from your payment?', 
+    category: 'Payment & Earnings', 
+    categoryCode: 'PE', 
+    type: 'dropdown',
+    options: ['No deductions', 'Platform fees', 'Service charges', 'Penalties', 'Taxes', 'Other', 'Multiple types']
+  },
+  { 
+    id: 'PE_08', 
+    question: 'How do you receive payment?', 
+    category: 'Payment & Earnings', 
+    categoryCode: 'PE', 
+    type: 'dropdown',
+    options: ['Bank transfer', 'Digital wallet', 'Cash', 'Check', 'Cryptocurrency', 'Other']
+  },
+  { 
+    id: 'PE_09', 
+    question: 'Can you choose your payment currency?', 
+    category: 'Payment & Earnings', 
+    categoryCode: 'PE', 
+    type: 'yesno'
+  },
 
   // Work Costs
   { id: 'WC_01', question: 'What proportion of your income goes to work costs?', category: 'Work Costs', categoryCode: 'WC', type: 'dropdown', options: ['0-10%', '10-25%', '25-50%', '50-75%', '75%+'] },
   { id: 'WC_02', question: 'Do you pay commission or fees to the platform?', category: 'Work Costs', categoryCode: 'WC', type: 'yesno' },
-  { id: 'WC_03', question: 'Does your income fluctuate? Why?', category: 'Work Costs', categoryCode: 'WC', type: 'textarea' },
+  { 
+    id: 'WC_03', 
+    question: 'Does your income fluctuate?', 
+    category: 'Work Costs', 
+    categoryCode: 'WC', 
+    type: 'dropdown',
+    options: ['Very stable', 'Somewhat stable', 'Moderate fluctuation', 'High fluctuation', 'Extremely unpredictable']
+  },
+  { 
+    id: 'WC_04', 
+    question: 'What causes your income to fluctuate?', 
+    category: 'Work Costs', 
+    categoryCode: 'WC', 
+    type: 'textarea'
+  },
 
   // Unpaid Work Time
   { id: 'UWT_01', question: 'Is some work time unpaid (like applying for jobs)? How much?', category: 'Unpaid Work Time', categoryCode: 'UWT', type: 'textarea' },
@@ -89,13 +155,40 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'CT_03', question: 'Do you have digital access to the contract?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yesno' },
   { id: 'CT_04', question: 'Where can you access the contract/terms?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'textarea' },
   { id: 'CT_05', question: 'Do terms include pay details bonuses incentives?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'yesno' },
-  { id: 'CT_06', question: 'If contract changes are you notified? How far ahead?', category: 'Contracts & Terms', categoryCode: 'CT', type: 'textarea' },
+  { 
+    id: 'CT_06', 
+    question: 'If contract changes, are you notified?', 
+    category: 'Contracts & Terms', 
+    categoryCode: 'CT', 
+    type: 'yesno'
+  },
+  { 
+    id: 'CT_07', 
+    question: 'How far ahead are you notified about contract changes?', 
+    category: 'Contracts & Terms', 
+    categoryCode: 'CT', 
+    type: 'dropdown',
+    options: ['No notification', 'Same day', '1-3 days', '1 week', '2 weeks', '1 month', '2+ months']
+  },
 
   // Health & Safety
   { id: 'HS_01', question: 'Does work affect your physical or mental health?', category: 'Health & Safety', categoryCode: 'HS', type: 'yesno' },
   { id: 'HS_02', question: 'Does the platform take steps to address health risks?', category: 'Health & Safety', categoryCode: 'HS', type: 'yesno' },
   { id: 'HS_03', question: 'Did you receive safety training?', category: 'Health & Safety', categoryCode: 'HS', type: 'yesno' },
-  { id: 'HS_04', question: 'Does platform provide insurance? What does it cover?', category: 'Health & Safety', categoryCode: 'HS', type: 'textarea' },
+  { 
+    id: 'HS_04', 
+    question: 'Does platform provide insurance?', 
+    category: 'Health & Safety', 
+    categoryCode: 'HS', 
+    type: 'yesno'
+  },
+  { 
+    id: 'HS_05', 
+    question: 'What does the insurance cover?', 
+    category: 'Health & Safety', 
+    categoryCode: 'HS', 
+    type: 'textarea'
+  },
 
   // Data & Privacy
   { id: 'DP_01', question: 'What data does the platform collect about you?', category: 'Data & Privacy', categoryCode: 'DP', type: 'textarea' },
@@ -113,9 +206,34 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'SE_02', question: 'What was the issue and how was it handled?', category: 'Support Experience', categoryCode: 'SE', type: 'textarea' },
 
   // Due Process
-  { id: 'DUE_01', question: 'Have you experienced disciplinary action or deactivation?', category: 'Due Process', categoryCode: 'DUE', type: 'yesno' },
-  { id: 'DUE_02', question: 'How can you contest management decisions?', category: 'Due Process', categoryCode: 'DUE', type: 'textarea' },
-  { id: 'DUE_03', question: 'Can you reach platform directly if there are supervisor problems?', category: 'Due Process', categoryCode: 'DUE', type: 'yesno' },
+  { 
+    id: 'DUE_01', 
+    question: 'Have you experienced disciplinary action?', 
+    category: 'Due Process', 
+    categoryCode: 'DUE', 
+    type: 'yesno'
+  },
+  { 
+    id: 'DUE_02', 
+    question: 'Have you experienced account deactivation?', 
+    category: 'Due Process', 
+    categoryCode: 'DUE', 
+    type: 'yesno'
+  },
+  { 
+    id: 'DUE_03', 
+    question: 'How can you contest management decisions?', 
+    category: 'Due Process', 
+    categoryCode: 'DUE', 
+    type: 'textarea'
+  },
+  { 
+    id: 'DUE_04', 
+    question: 'Can you reach platform directly if there are supervisor problems?', 
+    category: 'Due Process', 
+    categoryCode: 'DUE', 
+    type: 'yesno'
+  },
 
   // Discrimination
   { id: 'DIS_01', question: 'Have you felt discriminated against based on your identity?', category: 'Discrimination', categoryCode: 'DIS', type: 'yesno' },

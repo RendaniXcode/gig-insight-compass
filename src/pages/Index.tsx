@@ -98,6 +98,52 @@ const Index = () => {
     toast.success("Progress saved successfully!");
   };
 
+  const handleCategorySaveAndNext = (currentCategoryCode: string) => {
+    // Mark current category as completed
+    setSession(prev => {
+      if (!prev.completedCategories.includes(currentCategoryCode)) {
+        return {
+          ...prev,
+          completedCategories: [...prev.completedCategories, currentCategoryCode],
+          lastUpdated: new Date()
+        };
+      }
+      return prev;
+    });
+
+    // Save to database (simulated with localStorage for now)
+    const categoryResponses = session.responses.filter(r => {
+      const question = SURVEY_QUESTIONS.find(q => q.id === r.questionId);
+      return question?.categoryCode === currentCategoryCode;
+    });
+
+    // Simulate database save
+    const saveData = {
+      categoryCode: currentCategoryCode,
+      sessionId: session.id,
+      responses: categoryResponses,
+      timestamp: new Date(),
+      platformName: session.platformName,
+      employmentType: session.employmentType
+    };
+
+    localStorage.setItem(`category_${currentCategoryCode}_${session.id}`, JSON.stringify(saveData));
+    
+    toast.success(`${SURVEY_CATEGORIES.find(c => c.code === currentCategoryCode)?.name} saved successfully!`);
+
+    // Find next category
+    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === currentCategoryCode);
+    if (currentIndex < SURVEY_CATEGORIES.length - 1) {
+      const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
+      setSelectedCategory(nextCategory.code);
+      toast.info(`Moving to: ${nextCategory.name}`);
+    } else {
+      // All categories completed, go to dashboard
+      setCurrentView('dashboard');
+      toast.success("All categories completed! Check your dashboard.");
+    }
+  };
+
   const handleExport = () => {
     const exportData = {
       sessionInfo: {
@@ -190,6 +236,7 @@ const Index = () => {
             onResponseChange={handleResponseChange}
             onBack={() => setCurrentView('categories')}
             onSave={handleSave}
+            onCategorySaveAndNext={handleCategorySaveAndNext}
           />
         )}
         

@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, ArrowRight, Save, Home } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, Home, Database } from "lucide-react";
 import { Question, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -19,6 +19,7 @@ interface QuestionInterfaceProps {
   onResponseChange: (questionId: string, answer: string) => void;
   onBack: () => void;
   onSave: () => void;
+  onCategorySaveAndNext: (categoryCode: string) => void;
 }
 
 const QuestionInterface = ({ 
@@ -26,7 +27,8 @@ const QuestionInterface = ({
   responses, 
   onResponseChange, 
   onBack,
-  onSave 
+  onSave,
+  onCategorySaveAndNext
 }: QuestionInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState("");
@@ -36,6 +38,7 @@ const QuestionInterface = ({
   const category = SURVEY_CATEGORIES.find(c => c.code === categoryCode);
   
   const progress = ((currentQuestionIndex + 1) / categoryQuestions.length) * 100;
+  const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
 
   useEffect(() => {
     if (currentQuestion) {
@@ -61,6 +64,10 @@ const QuestionInterface = ({
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
+  };
+
+  const handleSaveAndNext = () => {
+    onCategorySaveAndNext(categoryCode);
   };
 
   const renderQuestionInput = () => {
@@ -176,14 +183,23 @@ const QuestionInterface = ({
               Question {currentQuestionIndex + 1} of {categoryQuestions.length}
             </div>
             
-            <Button
-              onClick={handleNext}
-              disabled={currentQuestionIndex === categoryQuestions.length - 1}
-              className="flex items-center gap-2 w-full sm:w-auto"
-            >
-              Next
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            {!isLastQuestion ? (
+              <Button
+                onClick={handleNext}
+                className="flex items-center gap-2 w-full sm:w-auto"
+              >
+                Next
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSaveAndNext}
+                className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700"
+              >
+                <Database className="h-4 w-4" />
+                Save & Continue to Next Category
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
