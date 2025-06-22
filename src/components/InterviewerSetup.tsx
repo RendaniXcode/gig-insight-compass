@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User, Mail } from "lucide-react";
 
 interface InterviewerSetupProps {
@@ -11,14 +12,39 @@ interface InterviewerSetupProps {
 }
 
 const InterviewerSetup = ({ onSetup }: InterviewerSetupProps) => {
-  const [interviewer, setInterviewer] = useState("");
+  const [interviewerType, setInterviewerType] = useState("");
+  const [customInterviewer, setCustomInterviewer] = useState("");
   const [email, setEmail] = useState("");
+
+  const handleInterviewerChange = (value: string) => {
+    setInterviewerType(value);
+    if (value === "rendani") {
+      setEmail("u24897664@tuks.co.za");
+    } else if (value === "other") {
+      setEmail("");
+    }
+  };
+
+  const getInterviewerName = () => {
+    if (interviewerType === "rendani") {
+      return "Rendani Tshivhangani";
+    } else if (interviewerType === "other") {
+      return customInterviewer.trim();
+    }
+    return "";
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (interviewer.trim()) {
-      onSetup(interviewer.trim(), email.trim() || undefined);
+    const interviewer = getInterviewerName();
+    if (interviewer) {
+      onSetup(interviewer, email.trim() || undefined);
     }
+  };
+
+  const isFormValid = () => {
+    const interviewer = getInterviewerName();
+    return interviewer.length > 0;
   };
 
   return (
@@ -30,19 +56,36 @@ const InterviewerSetup = ({ onSetup }: InterviewerSetupProps) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="interviewer" className="flex items-center gap-2">
+              <Label htmlFor="interviewer-select" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Interviewer Name *
               </Label>
-              <Input
-                id="interviewer"
-                type="text"
-                value={interviewer}
-                onChange={(e) => setInterviewer(e.target.value)}
-                placeholder="Enter interviewer name"
-                required
-              />
+              <Select value={interviewerType} onValueChange={handleInterviewerChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select interviewer" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rendani">Rendani Tshivhangani</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {interviewerType === "other" && (
+              <div className="space-y-2">
+                <Label htmlFor="custom-interviewer">
+                  Custom Interviewer Name *
+                </Label>
+                <Input
+                  id="custom-interviewer"
+                  type="text"
+                  value={customInterviewer}
+                  onChange={(e) => setCustomInterviewer(e.target.value)}
+                  placeholder="Enter interviewer name"
+                  required
+                />
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2">
@@ -55,10 +98,11 @@ const InterviewerSetup = ({ onSetup }: InterviewerSetupProps) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address"
+                readOnly={interviewerType === "rendani"}
               />
             </div>
             
-            <Button type="submit" className="w-full" disabled={!interviewer.trim()}>
+            <Button type="submit" className="w-full" disabled={!isFormValid()}>
               Start Interview Session
             </Button>
           </form>
