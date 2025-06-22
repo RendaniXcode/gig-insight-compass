@@ -1,4 +1,3 @@
-
 import { Question } from "../types/survey";
 
 export const SURVEY_QUESTIONS: Question[] = [
@@ -117,7 +116,16 @@ export const SURVEY_QUESTIONS: Question[] = [
     interviewSection: '6. Work Expenses'
   },
   { id: 'WC_02', question: 'Do you pay commission or fees to the platform?', category: 'Work Costs', categoryCode: 'WC', type: 'yes_no', interviewSection: '6. Work Expenses' },
-  { id: 'WC_02a', question: 'What percentage commission/fees do you pay?', category: 'Work Costs', categoryCode: 'WC', type: 'number', followUpTo: 'WC_02', interviewSection: '6. Work Expenses' },
+  { 
+    id: 'WC_02a', 
+    question: 'What percentage commission/fees do you pay?', 
+    category: 'Work Costs', 
+    categoryCode: 'WC', 
+    type: 'multiple_choice',
+    options: ['0-5%', '5-10%', '10-15%', '15-20%', '20-25%', '25-30%', '30%+', 'Other'],
+    followUpTo: 'WC_02', 
+    interviewSection: '6. Work Expenses'
+  },
   { id: 'WC_03', question: 'Does your income fluctuate week to week?', category: 'Work Costs', categoryCode: 'WC', type: 'yes_no', interviewSection: '6. Work Expenses' },
   { id: 'WC_03a', question: 'Why does your income fluctuate?', category: 'Work Costs', categoryCode: 'WC', type: 'text', followUpTo: 'WC_03', interviewSection: '6. Work Expenses' },
 
