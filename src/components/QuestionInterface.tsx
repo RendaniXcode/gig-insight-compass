@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,8 @@ const QuestionInterface = ({
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [otherText, setOtherText] = useState('');
   const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [previousAnswer, setPreviousAnswer] = useState(''); // Track previous answer for change detection
+  const [hasUserInteracted, setHasUserInteracted] = useState(false); // Track if user has made changes
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Get questions for the current category
@@ -81,9 +84,12 @@ const QuestionInterface = ({
     console.log('Question changed, loading response for:', currentQuestion?.id);
     
     setIsLoadingResponse(true);
+    setHasUserInteracted(false); // Reset interaction flag for new question
+    
     // Always reset states first to prevent carryover
     setCurrentAnswer('');
     setOtherText('');
+    setPreviousAnswer('');
     
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
@@ -97,8 +103,10 @@ const QuestionInterface = ({
         if (answer.startsWith('Other: ')) {
           setCurrentAnswer('Other');
           setOtherText(answer.substring(7)); // Remove "Other: " prefix
+          setPreviousAnswer(answer); // Store the full "Other: text" as previous answer
         } else {
           setCurrentAnswer(answer);
+          setPreviousAnswer(answer);
         }
       }
     }
@@ -109,10 +117,60 @@ const QuestionInterface = ({
     }, 100);
   }, [currentQuestion?.id]); // Only depend on question ID
 
-  // Debounced auto-save response when answer changes (but not when loading)
+  // Helper function to get the final answer (combining "Other" with text if needed)
+  const getFinalAnswer = () => {
+    if (currentAnswer === 'Other' && otherText.trim()) {
+      return `Other: ${otherText.trim()}`;
+    }
+    return currentAnswer;
+  };
+
+  // Helper function to validate if answer has actually changed
+  const hasAnswerChanged = () => {
+    const finalAnswer = getFinalAnswer();
+    const changed = finalAnswer !== previousAnswer && finalAnswer.trim() !== '';
+    console.log('Answer change check:', { 
+      previous: previousAnswer, 
+      current: finalAnswer, 
+      changed, 
+      hasUserInteracted 
+    });
+    return changed;
+  };
+
+  // Helper function to validate answer according to question requirements
+  const isAnswerValid = () => {
+    const finalAnswer = getFinalAnswer();
+    
+    // Skip validation for empty answers or skipped questions
+    if (!finalAnswer || finalAnswer.trim() === '' || finalAnswer === 'SKIPPED') {
+      return true;
+    }
+
+    // Basic validation based on question type
+    switch (currentQuestion?.type) {
+      case 'number':
+        return !isNaN(Number(finalAnswer));
+      case 'date':
+        return !isNaN(Date.parse(finalAnswer));
+      case 'multiple_choice':
+        return currentQuestion.options?.includes(finalAnswer) || finalAnswer.startsWith('Other: ');
+      case 'yes_no':
+        return finalAnswer === 'Yes' || finalAnswer === 'No';
+      default:
+        return finalAnswer.trim().length > 0;
+    }
+  };
+
+  // Debounced auto-save response when answer changes (but only if it actually changed)
   useEffect(() => {
-    // Don't auto-save if we're loading an existing response or if answer is empty
-    if (isLoadingResponse || !currentQuestion || currentAnswer === '') {
+    // Don't auto-save if we're loading an existing response
+    if (isLoadingResponse || !currentQuestion) {
+      return;
+    }
+
+    // Only auto-save if user has interacted and answer has actually changed
+    if (!hasUserInteracted || !hasAnswerChanged() || !isAnswerValid()) {
       return;
     }
 
@@ -123,16 +181,15 @@ const QuestionInterface = ({
 
     // Set a new timeout for debounced saving
     saveTimeoutRef.current = setTimeout(() => {
-      let finalAnswer = currentAnswer;
-      
-      // If "Other" is selected and there's text, combine them
-      if (currentAnswer === 'Other' && otherText.trim()) {
-        finalAnswer = `Other: ${otherText.trim()}`;
-      }
+      const finalAnswer = getFinalAnswer();
       
       console.log('Auto-saving response:', finalAnswer, 'for question:', currentQuestion.id);
       onResponseChange(currentQuestion.id, finalAnswer);
       onSave();
+      
+      // Update previous answer after successful save
+      setPreviousAnswer(finalAnswer);
+      setHasUserInteracted(false); // Reset interaction flag after save
     }, 500); // 500ms debounce
 
     // Cleanup timeout on unmount or dependency change
@@ -141,7 +198,7 @@ const QuestionInterface = ({
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [currentAnswer, otherText, currentQuestion, onResponseChange, onSave, isLoadingResponse]);
+  }, [currentAnswer, otherText, currentQuestion, onResponseChange, onSave, isLoadingResponse, hasUserInteracted, previousAnswer]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -151,6 +208,17 @@ const QuestionInterface = ({
       }
     };
   }, []);
+
+  // Handle user input changes with interaction tracking
+  const handleAnswerChange = (newAnswer: string) => {
+    setCurrentAnswer(newAnswer);
+    setHasUserInteracted(true);
+  };
+
+  const handleOtherTextChange = (newText: string) => {
+    setOtherText(newText);
+    setHasUserInteracted(true);
+  };
 
   const handleNext = () => {
     if (currentQuestionIndex < categoryQuestions.length - 1) {
@@ -174,6 +242,7 @@ const QuestionInterface = ({
 
   const handleSkip = () => {
     setCurrentAnswer("SKIPPED");
+    setHasUserInteracted(true);
   };
 
   const handleQuestionNumberClick = (index: number) => {
@@ -219,7 +288,7 @@ const QuestionInterface = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentAnswer('')}
+            onClick={() => handleAnswerChange('')}
             className="mt-2 text-xs"
           >
             Resume Question
@@ -234,7 +303,7 @@ const QuestionInterface = ({
           <div className="space-y-2">
             <Input
               value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Enter your answer..."
               className="w-full"
             />
@@ -246,7 +315,7 @@ const QuestionInterface = ({
           <div className="space-y-2">
             <Textarea
               value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Provide a detailed answer..."
               rows={4}
               className="w-full resize-none"
@@ -257,7 +326,7 @@ const QuestionInterface = ({
       case 'multiple_choice':
         return (
           <div className="space-y-4">
-            <Select value={currentAnswer === 'Other' ? '' : currentAnswer} onValueChange={setCurrentAnswer}>
+            <Select value={currentAnswer === 'Other' ? '' : currentAnswer} onValueChange={handleAnswerChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an option..." />
               </SelectTrigger>
@@ -279,7 +348,7 @@ const QuestionInterface = ({
                 <Input
                   id="other-input"
                   value={otherText}
-                  onChange={(e) => setOtherText(e.target.value)}
+                  onChange={(e) => handleOtherTextChange(e.target.value)}
                   placeholder="Enter your answer..."
                   className="w-full"
                 />
@@ -294,7 +363,7 @@ const QuestionInterface = ({
             <Input
               type="number"
               value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Enter a number..."
               className="w-full"
             />
@@ -304,7 +373,7 @@ const QuestionInterface = ({
       case 'yes_no':
         return (
           <div className="space-y-3">
-            <RadioGroup value={currentAnswer} onValueChange={setCurrentAnswer}>
+            <RadioGroup value={currentAnswer} onValueChange={handleAnswerChange}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="Yes" id="yes" />
                 <Label htmlFor="yes" className="text-sm font-medium cursor-pointer">
@@ -327,7 +396,7 @@ const QuestionInterface = ({
             <Input
               type="date"
               value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               className="w-full"
             />
           </div>
@@ -338,7 +407,7 @@ const QuestionInterface = ({
           <div className="space-y-2">
             <Input
               value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Type your answer here..."
               className="w-full"
             />
