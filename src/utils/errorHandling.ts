@@ -17,7 +17,11 @@ export const ERROR_CODES = {
   LOAD_FAILED: 'LOAD_FAILED',
   NAVIGATION_ERROR: 'NAVIGATION_ERROR',
   VALIDATION_ERROR: 'VALIDATION_ERROR',
-  SESSION_CORRUPTED: 'SESSION_CORRUPTED'
+  SESSION_CORRUPTED: 'SESSION_CORRUPTED',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  API_ERROR: 'API_ERROR',
+  AUTHENTICATION_ERROR: 'AUTHENTICATION_ERROR',
+  SERVER_ERROR: 'SERVER_ERROR'
 } as const;
 
 export const handleError = (error: unknown, context?: Record<string, any>) => {
@@ -32,6 +36,43 @@ export const handleError = (error: unknown, context?: Record<string, any>) => {
   }
   
   if (error instanceof Error) {
+    // Handle fetch/network errors
+    if (error.message.includes('fetch')) {
+      return {
+        code: ERROR_CODES.NETWORK_ERROR,
+        message: 'Network connection failed. Please check your internet connection.',
+        context
+      };
+    }
+    
+    // Handle HTTP errors
+    if (error.message.includes('HTTP error')) {
+      const statusMatch = error.message.match(/status: (\d+)/);
+      const status = statusMatch ? parseInt(statusMatch[1]) : 0;
+      
+      if (status >= 500) {
+        return {
+          code: ERROR_CODES.SERVER_ERROR,
+          message: 'Server error. Please try again later.',
+          context: { ...context, status }
+        };
+      }
+      
+      if (status === 401 || status === 403) {
+        return {
+          code: ERROR_CODES.AUTHENTICATION_ERROR,
+          message: 'Authentication failed. Please check your credentials.',
+          context: { ...context, status }
+        };
+      }
+      
+      return {
+        code: ERROR_CODES.API_ERROR,
+        message: `API error (${status}). Please try again.`,
+        context: { ...context, status }
+      };
+    }
+    
     return {
       code: 'UNKNOWN_ERROR',
       message: error.message,
@@ -74,4 +115,17 @@ export const validateSessionData = (data: any): boolean => {
   
   const requiredFields = ['id', 'interviewer', 'responses', 'completedCategories'];
   return requiredFields.every(field => field in data);
+};
+
+export const isNetworkError = (error: unknown): boolean => {
+  return error instanceof Error && (
+    error.message.includes('fetch') ||
+    error.message.includes('network') ||
+    error.message.includes('NetworkError')
+  );
+};
+
+export const getErrorMessage = (error: unknown): string => {
+  const errorInfo = handleError(error);
+  return errorInfo.message;
 };

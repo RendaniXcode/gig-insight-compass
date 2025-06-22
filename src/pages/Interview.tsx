@@ -1,11 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, BarChart3, Settings } from "lucide-react";
-import { SurveyResponse, InterviewSession } from "../types/survey";
+import { InterviewSession } from "../types/survey";
 import { SURVEY_CATEGORIES } from "../types/survey";
-import { SURVEY_QUESTIONS } from "../data/questions";
 import CategorySelector from "../components/CategorySelector";
 import QuestionInterface from "../components/QuestionInterface";
+import { useApiSurveyState } from "../hooks/useApiSurveyState";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface InterviewProps {
   interviewerName: string;
@@ -24,135 +27,43 @@ export const Interview = ({
   onGoToSetup,
   onGoToLanding
 }: InterviewProps) => {
-  const [responses, setResponses] = useState<SurveyResponse[]>([]);
   const [currentView, setCurrentView] = useState<'categories' | 'questions'>('questions');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [completedCategories, setCompletedCategories] = useState<string[]>([]);
-  const [sessionId, setSessionId] = useState<string>('');
 
-  // Helper function to find the current category and question based on responses
-  const findCurrentPosition = (sessionResponses: SurveyResponse[]) => {
-    if (sessionResponses.length === 0) {
-      // No responses yet, start with first category
-      return {
-        categoryCode: SURVEY_CATEGORIES[0].code,
-        questionIndex: 0
-      };
-    }
+  // Use the API-based survey state
+  const {
+    session,
+    responses,
+    currentQuestion,
+    isLoading,
+    error,
+    updateResponse,
+    completeSession,
+    getStatistics
+  } = useApiSurveyState({
+    sessionId: loadedSession?.id,
+    interviewerName,
+    interviewerEmail,
+    platformName: loadedSession?.platformName || "",
+    employmentType: loadedSession?.employmentType || "",
+    interviewCode: loadedSession?.interviewCode || ""
+  });
 
-    // Find the last answered question that's not skipped or empty
-    const answeredResponses = sessionResponses.filter(r => 
-      r.answer.trim() !== "" && r.answer !== "SKIPPED"
-    );
-
-    if (answeredResponses.length === 0) {
-      // All responses are empty or skipped, start from beginning
-      return {
-        categoryCode: SURVEY_CATEGORIES[0].code,
-        questionIndex: 0
-      };
-    }
-
-    // Get the last answered question
-    const lastAnsweredResponse = answeredResponses[answeredResponses.length - 1];
-    const lastAnsweredQuestion = SURVEY_QUESTIONS.find(q => q.id === lastAnsweredResponse.questionId);
-    
-    if (!lastAnsweredQuestion) {
-      return {
-        categoryCode: SURVEY_CATEGORIES[0].code,
-        questionIndex: 0
-      };
-    }
-
-    // Find all questions in the same category
-    const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === lastAnsweredQuestion.categoryCode);
-    const questionIndex = categoryQuestions.findIndex(q => q.id === lastAnsweredQuestion.id);
-
-    // If this was the last question in the category, move to next category
-    if (questionIndex === categoryQuestions.length - 1) {
-      const currentCategoryIndex = SURVEY_CATEGORIES.findIndex(c => c.code === lastAnsweredQuestion.categoryCode);
-      if (currentCategoryIndex < SURVEY_CATEGORIES.length - 1) {
-        // Move to next category
-        return {
-          categoryCode: SURVEY_CATEGORIES[currentCategoryIndex + 1].code,
-          questionIndex: 0
-        };
-      } else {
-        // This was the last category, stay on the last question
-        return {
-          categoryCode: lastAnsweredQuestion.categoryCode,
-          questionIndex: questionIndex
-        };
-      }
-    } else {
-      // Move to next question in the same category
-      return {
-        categoryCode: lastAnsweredQuestion.categoryCode,
-        questionIndex: questionIndex + 1
-      };
-    }
-  };
-
-  // Initialize session data
+  // Set initial category when session loads
   useEffect(() => {
-    if (loadedSession) {
-      // Load data from the specific session
-      console.log('Loading session data:', loadedSession);
-      setResponses(loadedSession.responses || []);
-      setCompletedCategories(loadedSession.completedCategories || []);
-      setSessionId(loadedSession.id);
-      
-      // Find where the user left off
-      const currentPosition = findCurrentPosition(loadedSession.responses || []);
-      console.log('Resuming at position:', currentPosition);
-      
-      setSelectedCategory(currentPosition.categoryCode);
+    if (currentQuestion && !selectedCategory) {
+      setSelectedCategory(currentQuestion.categoryCode);
       setCurrentView('questions');
-    } else {
-      // Auto-start with first category for new sessions
-      if (SURVEY_CATEGORIES.length > 0) {
-        setSelectedCategory(SURVEY_CATEGORIES[0].code);
-        setCurrentView('questions');
-        setSessionId(`session_${Date.now()}`);
-      }
     }
-  }, [loadedSession]);
+  }, [currentQuestion, selectedCategory]);
 
-  const handleResponseChange = (questionId: string, answer: string) => {
-    setResponses(prev => {
-      const existing = prev.findIndex(r => r.questionId === questionId);
-      const newResponse = { questionId, answer, timestamp: new Date() };
-      
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = newResponse;
-        return updated;
-      } else {
-        return [...prev, newResponse];
-      }
-    });
+  const handleResponseChange = async (questionId: string, answer: string) => {
+    await updateResponse(questionId, answer);
   };
 
-  const handleSave = () => {
-    // Create or update session in localStorage
-    const session: InterviewSession = {
-      id: sessionId,
-      interviewer: interviewerName,
-      interviewerEmail: interviewerEmail,
-      interviewDate: loadedSession?.interviewDate || new Date().toLocaleDateString(),
-      startTime: loadedSession?.startTime || new Date(),
-      lastUpdated: new Date(),
-      status: 'in-progress',
-      responses: responses,
-      completedCategories: completedCategories,
-      platformName: loadedSession?.platformName || "",
-      employmentType: loadedSession?.employmentType || "",
-      interviewCode: loadedSession?.interviewCode || "",
-      currentQuestionIndex: 0
-    };
-    
-    localStorage.setItem(`interview_session_${sessionId}`, JSON.stringify(session));
-    console.log('Session saved:', session);
+  const handleSave = async () => {
+    // Auto-save is handled by the API hook
+    console.log('Save triggered - handled automatically by API');
   };
 
   const handleCategorySelect = (categoryCode: string) => {
@@ -164,9 +75,11 @@ export const Interview = ({
     setCurrentView('categories');
   };
 
-  const handleCategorySaveAndNext = (categoryCode: string) => {
-    if (!completedCategories.includes(categoryCode)) {
-      setCompletedCategories(prev => [...prev, categoryCode]);
+  const handleCategorySaveAndNext = async (categoryCode: string) => {
+    // Category completion is handled by the API
+    const stats = getStatistics();
+    if (stats.completionPercentage >= 100) {
+      await completeSession();
     }
   };
 
@@ -201,22 +114,66 @@ export const Interview = ({
     }
   };
 
+  // Loading state
+  if (isLoading && !session) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-2 md:p-4">
+        <div className="max-w-4xl mx-auto">
+          <Card className="w-full">
+            <CardContent className="p-8 text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Loading Survey...</h3>
+              <p className="text-gray-600">Setting up your interview session</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-2 md:p-4">
+        <div className="max-w-4xl mx-auto">
+          <Card className="w-full">
+            <CardContent className="p-8 text-center">
+              <div className="text-red-500 text-lg mb-4">⚠️</div>
+              <h3 className="text-lg font-semibold mb-2 text-red-600">Connection Error</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <div className="space-x-2">
+                <Button onClick={onGoToDashboard} variant="outline">
+                  Go to Dashboard
+                </Button>
+                {onGoToLanding && (
+                  <Button onClick={onGoToLanding}>
+                    Back to Home
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-2 md:p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Mobile-optimized header with increased top spacing */}
+        {/* Header */}
         <div className="pt-4 pb-2 space-y-2">
-          {/* Title - centered on mobile with 5% spacing from top */}
           <div className="text-center">
             <h1 className="text-lg md:text-2xl font-bold text-gray-900">Interview Session</h1>
-            {loadedSession && (
+            {session && (
               <p className="text-xs text-gray-600 mt-1">
-                Continuing: {loadedSession.interviewer} - {loadedSession.interviewDate}
+                {session.interviewer} - {session.interviewDate} {session.status === 'in_progress' && isLoading && (
+                  <Loader2 className="h-3 w-3 animate-spin inline ml-1" />
+                )}
               </p>
             )}
           </div>
           
-          {/* Navigation buttons - centered and compact on mobile */}
           <div className="flex justify-center">
             <div className="flex gap-1.5">
               <Button variant="outline" onClick={onGoToDashboard} className="flex items-center gap-1.5 text-xs h-8 px-3">
@@ -242,7 +199,7 @@ export const Interview = ({
         {currentView === 'categories' && (
           <CategorySelector
             selectedCategory={selectedCategory}
-            completedCategories={completedCategories}
+            completedCategories={session?.completedCategories || []}
             onCategorySelect={handleCategorySelect}
           />
         )}
@@ -258,7 +215,7 @@ export const Interview = ({
             onMoveToNextCategory={handleMoveToNextCategory}
             onNavigateToPreviousCategory={handleNavigateToPreviousCategory}
             onNavigateToNextCategory={handleNavigateToNextCategory}
-            initialQuestionIndex={loadedSession ? findCurrentPosition(loadedSession.responses || []).questionIndex : 0}
+            initialQuestionIndex={0}
           />
         )}
       </div>
