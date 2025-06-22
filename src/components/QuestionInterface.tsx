@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -111,11 +110,6 @@ const QuestionInterface = ({
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
-  };
-
-  const handleSaveAndNext = () => {
-    onCategorySaveAndNext(categoryCode);
-    setShowSuccessDialog(true);
   };
 
   const handleContinueToNext = () => {
@@ -369,7 +363,7 @@ const QuestionInterface = ({
           <span className="hidden sm:inline">Back to Categories</span>
           <span className="sm:hidden">Back</span>
         </Button>
-        <Button onClick={handleSaveProgress} className="flex items-center gap-2 self-start sm:self-auto text-xs h-8 px-2">
+        <Button onClick={handleSaveProgress} className="flex items-center gap-2 self-start text-xs h-8 px-2">
           <Save className="h-3 w-3" />
           Save Progress
         </Button>
