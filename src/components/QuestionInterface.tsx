@@ -323,6 +323,7 @@ const QuestionInterface = ({
     return "answered";
   };
 
+  // Render the input for the current question
   const renderQuestionInput = () => {
     // Don't render input if question is skipped
     if (currentAnswer === "SKIPPED") {
@@ -689,26 +690,26 @@ const QuestionInterface = ({
             </div>
           )}
 
-          {/* Navigation */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4">
+          {/* Navigation - Updated for better mobile layout */}
+          <div className="flex items-center justify-between gap-2 pt-4">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentQuestionIndex === 0}
-              className="flex items-center gap-2 w-full sm:w-auto"
+              className="flex items-center gap-2 flex-1 max-w-[120px]"
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
             </Button>
             
-            <div className="text-sm text-gray-500 text-center sm:order-none order-first">
+            <div className="text-sm text-gray-500 text-center px-2 flex-shrink-0">
               Question {currentQuestionIndex + 1} of {categoryQuestions.length}
             </div>
             
             {!isLastQuestion ? (
               <Button
                 onClick={handleNext}
-                className="flex items-center gap-2 w-full sm:w-auto"
+                className="flex items-center gap-2 flex-1 max-w-[120px]"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -718,10 +719,10 @@ const QuestionInterface = ({
                 <AlertDialogTrigger asChild>
                   <Button
                     onClick={handleSaveAndNext}
-                    className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                    className="flex items-center gap-2 flex-1 max-w-[120px] bg-green-600 hover:bg-green-700 text-xs"
                   >
                     <Database className="h-4 w-4" />
-                    Save & Complete Category
+                    Complete
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="w-[75%] max-w-[300px] sm:max-w-[350px]">
