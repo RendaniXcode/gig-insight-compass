@@ -28,8 +28,8 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'WS_02', question: 'Are you paid hourly or per task/service?', category: 'Work Structure', categoryCode: 'WS', type: 'multiple_choice', options: ['Hourly', 'Per task', 'Per service', 'Commission based', 'Fixed salary', 'Other'], interviewSection: '3. Work Organization' },
   { id: 'WS_03', question: 'How does the app assign tasks to you?', category: 'Work Structure', categoryCode: 'WS', type: 'text', interviewSection: '3. Work Organization' },
   { id: 'WS_04', question: 'Can you choose not to take a task?', category: 'Work Structure', categoryCode: 'WS', type: 'yes_no', interviewSection: '3. Work Organization' },
-  { id: 'WS_04a', question: 'Is there a penalty for canceling a task?', category: 'Work Structure', categoryCode: 'WS', type: 'yes_no', followUpTo: 'WS_04', interviewSection: '3. Work Organization' },
-  { id: 'WS_04b', question: 'What penalties do you face for canceling tasks?', category: 'Work Structure', categoryCode: 'WS', type: 'text', followUpTo: 'WS_04a', interviewSection: '3. Work Organization' },
+  { id: 'WS_04a', question: 'Is there a penalty for cancelling a task?', category: 'Work Structure', categoryCode: 'WS', type: 'yes_no', followUpTo: 'WS_04', interviewSection: '3. Work Organization' },
+  { id: 'WS_04b', question: 'What penalties do you face for cancelling tasks?', category: 'Work Structure', categoryCode: 'WS', type: 'text', followUpTo: 'WS_04a', interviewSection: '3. Work Organization' },
 
   // Platform Management
   { id: 'PM_01', question: 'Is there a rating system?', category: 'Platform Management', categoryCode: 'PM', type: 'yes_no', interviewSection: '4. Platform Systems' },
