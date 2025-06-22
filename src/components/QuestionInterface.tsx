@@ -1,18 +1,36 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle, SkipForward, LogOut, Play } from "lucide-react";
-import { Question, SurveyResponse } from "../types/survey";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Save, 
+  Database, 
+  CheckCircle, 
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  SkipForward
+} from "lucide-react";
+import { SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface QuestionInterfaceProps {
   categoryCode: string;
@@ -21,303 +39,84 @@ interface QuestionInterfaceProps {
   onBack: () => void;
   onSave: () => void;
   onCategorySaveAndNext: (categoryCode: string) => void;
-  onMoveToNextCategory?: (categoryCode: string) => void;
-  onNavigateToPreviousCategory?: () => void;
-  onNavigateToNextCategory?: () => void;
+  onMoveToNextCategory: (currentCategoryCode: string) => void;
+  onNavigateToPreviousCategory: () => void;
+  onNavigateToNextCategory: () => void;
+  initialQuestionIndex?: number;
 }
 
-const QuestionInterface = ({ 
-  categoryCode, 
-  responses, 
-  onResponseChange, 
+const QuestionInterface = ({
+  categoryCode,
+  responses,
+  onResponseChange,
   onBack,
   onSave,
   onCategorySaveAndNext,
   onMoveToNextCategory,
   onNavigateToPreviousCategory,
-  onNavigateToNextCategory
+  onNavigateToNextCategory,
+  initialQuestionIndex = 0
 }: QuestionInterfaceProps) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [currentAnswer, setCurrentAnswer] = useState("");
-  const [customInput, setCustomInput] = useState("");
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialQuestionIndex);
+  const [currentAnswer, setCurrentAnswer] = useState('');
 
+  // Get questions for the current category
   const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
   const currentQuestion = categoryQuestions[currentQuestionIndex];
   const category = SURVEY_CATEGORIES.find(c => c.code === categoryCode);
-  
-  const progress = ((currentQuestionIndex + 1) / categoryQuestions.length) * 100;
-  const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
-  const hasAnsweredCurrentQuestion = currentAnswer && currentAnswer.trim() !== "";
 
-  // Calculate overall progress across all categories
-  const calculateOverallProgress = () => {
-    const totalQuestions = SURVEY_QUESTIONS.length;
-    const answeredQuestions = responses.filter(r => r.answer && r.answer.trim() !== "").length;
-    return (answeredQuestions / totalQuestions) * 100;
-  };
-
-  const overallProgress = calculateOverallProgress();
-
-  // Calculate current position in overall interview
-  const getCurrentOverallPosition = () => {
-    const currentCategoryIndex = SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode);
-    let questionsBeforeCurrentCategory = 0;
-    
-    for (let i = 0; i < currentCategoryIndex; i++) {
-      const catQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === SURVEY_CATEGORIES[i].code);
-      questionsBeforeCurrentCategory += catQuestions.length;
-    }
-    
-    return questionsBeforeCurrentCategory + currentQuestionIndex + 1;
-  };
-
-  const currentOverallPosition = getCurrentOverallPosition();
-  const totalQuestions = SURVEY_QUESTIONS.length;
-
-  // Special dropdown options for specific questions
-  const getPlatformOptions = () => ['UBER', 'BOLT', 'iDrive', 'Shesha', 'Other'];
-  
-  const getAgeRangeOptions = () => [
-    '18-24', '25-34', '35-44', '45-54', '55-64', '65+', 'Other'
-  ];
-
-  const getExperienceYearOptions = () => {
-    const years = [];
-    for (let i = 1; i <= 18; i++) {
-      years.push(`${i} year${i === 1 ? '' : 's'}`);
-    }
-    years.push('Other');
-    return years;
-  };
-
-  const getWorkHoursOptions = () => {
-    const hours = [];
-    for (let i = 1; i <= 24; i++) {
-      hours.push(`${i} hour${i === 1 ? '' : 's'}`);
-    }
-    hours.push('Other');
-    return hours;
-  };
-
-  // Reset to question 1 when category changes
+  // Update question index when initialQuestionIndex changes
   useEffect(() => {
-    setCurrentQuestionIndex(0);
-  }, [categoryCode]);
+    setCurrentQuestionIndex(initialQuestionIndex);
+  }, [initialQuestionIndex]);
 
+  // Load existing response when question changes
   useEffect(() => {
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
-      const response = existingResponse?.answer || "";
-      
-      // Handle special cases for Platform Name, Age, Experience, and Work Hours
-      if (currentQuestion.id === 'BI_01') {
-        // Platform Name - check if it's a custom response
-        const platformOptions = getPlatformOptions();
-        if (response && !platformOptions.includes(response)) {
-          setCurrentAnswer('Other');
-          setCustomInput(response);
-        } else {
-          setCurrentAnswer(response);
-          setCustomInput("");
-        }
-      } else if (currentQuestion.id === 'PB_01') {
-        // Age - check if it's a custom response
-        const ageOptions = getAgeRangeOptions();
-        if (response && !ageOptions.includes(response)) {
-          setCurrentAnswer('Other');
-          setCustomInput(response);
-        } else {
-          setCurrentAnswer(response);
-          setCustomInput("");
-        }
-      } else if (currentQuestion.id === 'PI_01') {
-        // Experience years - check if it's a custom response
-        const experienceOptions = getExperienceYearOptions();
-        if (response && !experienceOptions.includes(response)) {
-          setCurrentAnswer('Other');
-          setCustomInput(response);
-        } else {
-          setCurrentAnswer(response);
-          setCustomInput("");
-        }
-      } else if (currentQuestion.id === 'WS_01') {
-        // Work hours - check if it's a custom response
-        const workHoursOptions = getWorkHoursOptions();
-        if (response && !workHoursOptions.includes(response)) {
-          setCurrentAnswer('Other');
-          setCustomInput(response);
-        } else {
-          setCurrentAnswer(response);
-          setCustomInput("");
-        }
-      } else {
-        // Check if it's a custom "Other" response for regular questions
-        if (currentQuestion.options?.includes('Other') && response && !currentQuestion.options.includes(response)) {
-          setCurrentAnswer('Other');
-          setCustomInput(response);
-        } else {
-          setCurrentAnswer(response);
-          setCustomInput("");
-        }
-      }
+      setCurrentAnswer(existingResponse?.answer || '');
     }
   }, [currentQuestion, responses]);
 
-  const handleAnswerChange = (value: string) => {
-    setCurrentAnswer(value);
-    if (currentQuestion) {
-      if (value === 'Other') {
-        // Don't save yet, wait for custom input
-        setCustomInput("");
-      } else {
-        onResponseChange(currentQuestion.id, value);
-        setCustomInput("");
-      }
+  // Auto-save response when answer changes
+  useEffect(() => {
+    if (currentQuestion && currentAnswer !== '') {
+      onResponseChange(currentQuestion.id, currentAnswer);
+      onSave();
     }
-  };
-
-  const handleCustomInputChange = (value: string) => {
-    setCustomInput(value);
-    if (currentQuestion && currentAnswer === 'Other') {
-      onResponseChange(currentQuestion.id, value);
-    }
-  };
-
-  const handleSkipQuestion = () => {
-    if (currentQuestion) {
-      onResponseChange(currentQuestion.id, "SKIPPED");
-      setCurrentAnswer("SKIPPED");
-      setCustomInput("");
-    }
-  };
+  }, [currentAnswer, currentQuestion, onResponseChange, onSave]);
 
   const handleNext = () => {
     if (currentQuestionIndex < categoryQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 
-  const handleContinueToNext = () => {
-    setShowSuccessDialog(false);
-    if (onMoveToNextCategory) {
-      onMoveToNextCategory(categoryCode);
-    }
-  };
-
-  const simulateProgressSave = async () => {
-    // Simulate POST API call to backend
-    const saveData = {
-      categoryCode,
-      currentQuestionIndex,
-      responses: responses.filter(r => 
-        categoryQuestions.some(q => q.id === r.questionId)
-      ),
-      timestamp: new Date().toISOString(),
-      sessionId: `session_${Date.now()}`
-    };
-
-    console.log('POST /api/save-progress', saveData);
-    console.log('Simulating backend save...');
+  const handleSaveAndNext = () => {
+    // Save current category progress
+    onCategorySaveAndNext(categoryCode);
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    console.log('✅ Progress saved successfully to backend');
-    return saveData;
+    // Move to next category
+    onMoveToNextCategory(categoryCode);
   };
 
-  const simulateCategorySave = async () => {
-    // Simulate POST API call to backend for category completion
-    const saveData = {
-      categoryCode,
-      categoryName: category?.name,
-      totalQuestions: categoryQuestions.length,
-      completedResponses: responses.filter(r => 
-        categoryQuestions.some(q => q.id === r.questionId)
-      ),
-      completionStatus: 'completed',
-      timestamp: new Date().toISOString(),
-      sessionId: `session_${Date.now()}`
-    };
-
-    console.log('POST /api/save-category-completion', saveData);
-    console.log('Simulating category completion save...');
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    console.log('✅ Category completion saved successfully to backend');
-    return saveData;
+  const handleSkip = () => {
+    setCurrentAnswer("SKIPPED");
   };
 
-  const handleSaveAndNext = async () => {
-    try {
-      await simulateCategorySave();
-      onCategorySaveAndNext(categoryCode);
-      setShowSuccessDialog(true);
-    } catch (error) {
-      console.error('Failed to save category completion:', error);
-    }
-  };
+  const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
 
-  const handleSaveProgress = async () => {
-    try {
-      await simulateProgressSave();
-      onSave();
-      setShowSaveDialog(true);
-    } catch (error) {
-      console.error('Failed to save progress:', error);
-    }
-  };
-
-  const handleExitInterview = () => {
-    setShowSaveDialog(false);
-    onBack();
-  };
-
-  const handleContinueInterview = () => {
-    setShowSaveDialog(false);
-  };
-
-  const getNextCategoryName = () => {
-    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode);
-    if (currentIndex < SURVEY_CATEGORIES.length - 1) {
-      return SURVEY_CATEGORIES[currentIndex + 1].name;
-    }
-    return "Dashboard";
-  };
-
-  const isLastCategory = () => {
-    const currentIndex = SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode);
-    return currentIndex === SURVEY_CATEGORIES.length - 1;
-  };
-
-  const isCategorySkipped = () => {
-    const categoryResponses = responses.filter(r => 
-      categoryQuestions.some(q => q.id === r.questionId)
-    );
-    return categoryResponses.length > 0 && categoryResponses.every(r => r.answer === "N/A");
-  };
-
-  const getQuestionStatus = (questionId: string) => {
-    // If the entire category is skipped, all questions should show as skipped
-    if (isCategorySkipped()) {
-      return "skipped";
-    }
-    
-    const response = responses.find(r => r.questionId === questionId);
-    if (!response || response.answer.trim() === "") {
+  const getAnswerStatus = () => {
+    if (!currentAnswer || currentAnswer.trim() === "") {
       return "unanswered";
     }
-    if (response.answer === "SKIPPED") {
+    if (currentAnswer === "SKIPPED") {
       return "skipped";
     }
     return "answered";
@@ -328,181 +127,61 @@ const QuestionInterface = ({
     // Don't render input if question is skipped
     if (currentAnswer === "SKIPPED") {
       return (
-        <div className="text-center py-8">
-          <div className="text-gray-500 text-lg mb-4">This question has been skipped</div>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setCurrentAnswer("");
-              onResponseChange(currentQuestion.id, "");
-            }}
-            className="text-blue-600 hover:text-blue-700"
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center gap-2 text-yellow-700">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm font-medium">Question Skipped</span>
+          </div>
+          <p className="text-sm text-yellow-600 mt-1">This question was skipped and won't be included in the analysis.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentAnswer('')}
+            className="mt-2 text-xs"
           >
-            Answer This Question
+            Resume Question
           </Button>
         </div>
       );
     }
 
-    // Handle special cases for Platform Name, Age, Experience, and Work Hours
-    if (currentQuestion.id === 'BI_01') {
-      // Platform Name dropdown
-      return (
-        <div className="space-y-4">
-          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
-            <SelectTrigger className="text-base md:text-lg">
-              <SelectValue placeholder="Select a platform..." />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg z-50">
-              {getPlatformOptions().map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {currentAnswer === 'Other' && (
-            <Input
-              placeholder="Please specify the platform name..."
-              value={customInput}
-              onChange={(e) => handleCustomInputChange(e.target.value)}
-              className="text-base md:text-lg"
-            />
-          )}
-        </div>
-      );
-    }
-
-    if (currentQuestion.id === 'PB_01') {
-      // Age range dropdown
-      return (
-        <div className="space-y-4">
-          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
-            <SelectTrigger className="text-base md:text-lg">
-              <SelectValue placeholder="Select age range..." />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg z-50">
-              {getAgeRangeOptions().map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {currentAnswer === 'Other' && (
-            <Input
-              type="number"
-              placeholder="Please enter your age..."
-              value={customInput}
-              onChange={(e) => handleCustomInputChange(e.target.value)}
-              className="text-base md:text-lg"
-            />
-          )}
-        </div>
-      );
-    }
-
-    if (currentQuestion.id === 'PI_01') {
-      // Experience years dropdown
-      return (
-        <div className="space-y-4">
-          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
-            <SelectTrigger className="text-base md:text-lg">
-              <SelectValue placeholder="Select years of experience..." />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg z-50">
-              {getExperienceYearOptions().map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {currentAnswer === 'Other' && (
-            <Input
-              placeholder="Please specify (e.g., 6 months, 2 years 3 months)..."
-              value={customInput}
-              onChange={(e) => handleCustomInputChange(e.target.value)}
-              className="text-base md:text-lg"
-            />
-          )}
-        </div>
-      );
-    }
-
-    if (currentQuestion.id === 'WS_01') {
-      // Work hours dropdown
-      return (
-        <div className="space-y-4">
-          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
-            <SelectTrigger className="text-base md:text-lg">
-              <SelectValue placeholder="Select hours per day..." />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-lg z-50">
-              {getWorkHoursOptions().map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {currentAnswer === 'Other' && (
-            <Input
-              placeholder="Please specify (e.g., 30 minutes, 0.5 hours, 25 hours)..."
-              value={customInput}
-              onChange={(e) => handleCustomInputChange(e.target.value)}
-              className="text-base md:text-lg"
-            />
-          )}
-        </div>
-      );
-    }
-
-    // Regular question handling
-    const questionType = currentQuestion.type || 'textarea';
-    
-    switch (questionType) {
+    switch (currentQuestion.type) {
       case 'text':
         return (
-          <Input
-            placeholder="Enter your answer..."
-            value={currentAnswer}
-            onChange={(e) => handleAnswerChange(e.target.value)}
-            className="text-base md:text-lg"
-          />
+          <div className="space-y-2">
+            <Label htmlFor="answer" className="text-sm font-medium">Your Answer</Label>
+            <Input
+              id="answer"
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Type your answer here..."
+              className="w-full"
+            />
+          </div>
         );
-      
-      case 'number':
+
+      case 'textarea':
         return (
-          <Input
-            type="number"
-            placeholder="Enter a number..."
-            value={currentAnswer}
-            onChange={(e) => handleAnswerChange(e.target.value)}
-            className="text-base md:text-lg"
-          />
+          <div className="space-y-2">
+            <Label htmlFor="answer" className="text-sm font-medium">Your Answer</Label>
+            <Textarea
+              id="answer"
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Provide a detailed answer..."
+              rows={4}
+              className="w-full resize-none"
+            />
+          </div>
         );
-      
-      case 'date':
+
+      case 'select':
         return (
-          <Input
-            type="date"
-            value={currentAnswer}
-            onChange={(e) => handleAnswerChange(e.target.value)}
-            className="text-base md:text-lg"
-          />
-        );
-      
-      case 'multiple_choice':
-        return (
-          <div className="space-y-4">
-            <Select value={currentAnswer} onValueChange={handleAnswerChange}>
-              <SelectTrigger className="text-base md:text-lg">
-                <SelectValue placeholder="Select an option..." />
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Select an Option</Label>
+            <Select value={currentAnswer} onValueChange={setCurrentAnswer}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose an option..." />
               </SelectTrigger>
               <SelectContent>
                 {currentQuestion.options?.map((option) => (
@@ -512,181 +191,168 @@ const QuestionInterface = ({
                 ))}
               </SelectContent>
             </Select>
-            
-            {currentAnswer === 'Other' && (
-              <Input
-                placeholder="Please specify..."
-                value={customInput}
-                onChange={(e) => handleCustomInputChange(e.target.value)}
-                className="text-base md:text-lg"
-              />
-            )}
           </div>
         );
-      
-      case 'yes_no':
+
+      case 'number':
         return (
-          <RadioGroup value={currentAnswer} onValueChange={handleAnswerChange} className="flex flex-col space-y-3">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="Yes" id="yes" />
-              <Label htmlFor="yes" className="text-base md:text-lg cursor-pointer">Yes</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="No" id="no" />
-              <Label htmlFor="no" className="text-base md:text-lg cursor-pointer">No</Label>
-            </div>
-          </RadioGroup>
+          <div className="space-y-2">
+            <Label htmlFor="answer" className="text-sm font-medium">Enter Amount</Label>
+            <Input
+              id="answer"
+              type="number"
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Enter a number..."
+              className="w-full"
+            />
+          </div>
         );
-      
-      case 'textarea':
+
+      case 'boolean':
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Select Yes or No</Label>
+            <Select value={currentAnswer} onValueChange={setCurrentAnswer}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose Yes or No..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Yes">Yes</SelectItem>
+                <SelectItem value="No">No</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        );
+
       default:
         return (
-          <Textarea
-            placeholder="Please provide a detailed response..."
-            value={currentAnswer}
-            onChange={(e) => handleAnswerChange(e.target.value)}
-            className="min-h-[120px] md:min-h-[150px] text-base md:text-lg resize-none"
-          />
+          <div className="space-y-2">
+            <Label htmlFor="answer" className="text-sm font-medium">Your Answer</Label>
+            <Input
+              id="answer"
+              value={currentAnswer}
+              onChange={(e) => setCurrentAnswer(e.target.value)}
+              placeholder="Type your answer here..."
+              className="w-full"
+            />
+          </div>
         );
     }
   };
 
-  const navigateToPreviousCategory = () => {
-    if (onNavigateToPreviousCategory) {
-      onNavigateToPreviousCategory();
-    }
-  };
-
-  const navigateToNextCategory = () => {
-    if (onNavigateToNextCategory) {
-      onNavigateToNextCategory();
-    }
-  };
-
-  if (!currentQuestion || !category) {
-    return <div>Loading...</div>;
+  if (!currentQuestion) {
+    return (
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardContent className="p-6">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+            <h3 className="text-lg font-semibold mb-2">Question Not Found</h3>
+            <p className="text-gray-600 mb-4">The requested question could not be loaded.</p>
+            <Button onClick={onBack}>Back to Categories</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 px-2 md:px-0">
-      {/* Overall Progress Bar */}
-      <div className="bg-white rounded-lg shadow-sm p-4 border">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Overall Interview Progress</span>
-          <span className="text-sm text-gray-600">
-            {Math.round(overallProgress)}% Complete ({currentOverallPosition} of {totalQuestions})
-          </span>
-        </div>
-        <Progress value={overallProgress} className="h-3" />
-      </div>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 self-start text-xs h-8 px-2">
-          <Home className="h-3 w-3" />
-          <span className="hidden sm:inline">Back to Categories</span>
-          <span className="sm:hidden">Back</span>
+    <div className="w-full max-w-4xl mx-auto space-y-4">
+      {/* Category Navigation */}
+      <div className="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm border">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onNavigateToPreviousCategory}
+          className="flex items-center gap-1 text-xs"
+        >
+          <ChevronLeft className="h-3 w-3" />
+          Prev Category
         </Button>
-        <Button onClick={handleSaveProgress} className="flex items-center gap-2 self-start text-xs h-8 px-2">
-          <Save className="h-3 w-3" />
-          Save Progress
+        
+        <div className="flex items-center gap-2">
+          <div 
+            className={`w-3 h-3 rounded-full ${category?.color || 'bg-blue-500'}`}
+          />
+          <span className="font-medium text-sm">{category?.name}</span>
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onNavigateToNextCategory}
+          className="flex items-center gap-1 text-xs"
+        >
+          Next Category
+          <ChevronRight className="h-3 w-3" />
         </Button>
-      </div>
-
-      {/* Save Progress Dialog */}
-      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent className="w-[75%] max-w-[300px] sm:max-w-[350px]">
-          <DialogHeader className="text-center">
-            <DialogTitle className="flex items-center justify-center gap-2 text-center">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              Progress Saved Successfully!
-            </DialogTitle>
-            <DialogDescription className="text-center">
-              Your progress has been saved. What would you like to do next?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-col">
-            <Button
-              variant="outline"
-              onClick={handleExitInterview}
-              className="flex items-center justify-center gap-2 w-full"
-            >
-              <LogOut className="h-4 w-4" />
-              Exit & Continue Later
-            </Button>
-            <Button
-              onClick={handleContinueInterview}
-              className="flex items-center justify-center gap-2 w-full"
-            >
-              <Play className="h-4 w-4" />
-              Continue Interview
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Category Navigation - Fixed for mobile */}
-      <div className="bg-white rounded-lg shadow-sm p-2">
-        <div className="grid grid-cols-3 gap-1 items-center">
-          <Button
-            variant="outline"
-            onClick={navigateToPreviousCategory}
-            disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === 0}
-            className="flex items-center justify-center gap-1 text-xs px-2 py-1 h-8"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            <span className="hidden xs:inline">Prev</span>
-          </Button>
-          
-          <div className="text-xs font-medium text-gray-700 text-center px-1 leading-tight">
-            {category.name}
-          </div>
-          
-          <Button
-            variant="outline"
-            onClick={navigateToNextCategory}
-            disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === SURVEY_CATEGORIES.length - 1}
-            className="flex items-center justify-center gap-1 text-xs px-2 py-1 h-8"
-          >
-            <span className="hidden xs:inline">Next</span>
-            <ArrowRight className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Current Category Progress */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm text-gray-600">
-          <span className="font-medium">{category.name}</span>
-          <span>{currentQuestionIndex + 1} of {categoryQuestions.length}</span>
-        </div>
-        <Progress value={progress} className="h-2" />
       </div>
 
       {/* Question Card */}
-      <Card className="shadow-lg">
+      <Card className="w-full">
         <CardHeader className="pb-4">
-          <div className="flex items-start gap-3">
-            <div className={`w-3 h-3 rounded-full ${category.color} flex-shrink-0 mt-1`}></div>
-            <CardTitle className="text-lg md:text-xl leading-tight">
-              {currentQuestion.id}: {currentQuestion.question}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {renderQuestionInput()}
-
-          {/* Skip Button */}
-          {currentAnswer !== "SKIPPED" && (
-            <div className="flex justify-center">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="text-lg leading-tight">
+                {currentQuestion.question}
+              </CardTitle>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="outline" className="text-xs">
+                  {currentQuestion.id}
+                </Badge>
+                <Badge 
+                  className={`text-xs ${
+                    getAnswerStatus() === 'answered' ? 'bg-green-500 hover:bg-green-600' :
+                    getAnswerStatus() === 'skipped' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                    'bg-gray-500 hover:bg-gray-600'
+                  }`}
+                >
+                  {getAnswerStatus() === 'answered' && <CheckCircle className="h-3 w-3 mr-1" />}
+                  {getAnswerStatus() === 'skipped' && <AlertCircle className="h-3 w-3 mr-1" />}
+                  {getAnswerStatus().charAt(0).toUpperCase() + getAnswerStatus().slice(1)}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
-                onClick={handleSkipQuestion}
-                className="flex items-center gap-2 text-gray-500 hover:text-gray-700"
+                size="sm"
+                onClick={handleSkip}
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1 text-xs"
               >
-                <SkipForward className="h-4 w-4" />
-                Skip This Question
+                <SkipForward className="h-3 w-3" />
+                Skip
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSave}
+                className="flex items-center gap-1 text-xs"
+              >
+                <Save className="h-3 w-3" />
+                Save
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Question Input */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            {renderQuestionInput()}
+          </div>
+
+          {/* Help Text */}
+          {currentQuestion.helpText && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800">Helper Information</p>
+                  <p className="text-sm text-blue-700 mt-1">{currentQuestion.helpText}</p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -715,7 +381,7 @@ const QuestionInterface = ({
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+              <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     onClick={handleSaveAndNext}
@@ -726,75 +392,24 @@ const QuestionInterface = ({
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="w-[75%] max-w-[300px] sm:max-w-[350px]">
-                  <AlertDialogHeader className="space-y-4 text-center">
-                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-8 w-8 text-green-600" />
-                    </div>
-                    <AlertDialogTitle className="text-xl font-semibold text-gray-900 text-center">
-                      Category Saved!
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-center text-sm text-gray-500 font-light">
-                      {isLastCategory() 
-                        ? "All categories completed!"
-                        : `Continue to ${getNextCategoryName()}`
-                      }
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-base">Complete Category</AlertDialogTitle>
+                    <AlertDialogDescription className="text-sm">
+                      You've reached the end of this category. Would you like to save your progress and move to the next category?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="flex justify-center">
+                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                    <AlertDialogCancel className="text-xs h-8">Stay Here</AlertDialogCancel>
                     <AlertDialogAction 
-                      onClick={handleContinueToNext}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 text-lg mx-auto"
+                      onClick={handleSaveAndNext}
+                      className="bg-green-600 hover:bg-green-700 text-xs h-8"
                     >
-                      {isLastCategory() ? "View Dashboard" : "Continue"}
+                      Continue to Next Category
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Question Overview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Question Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-            {categoryQuestions.map((question, index) => {
-              const status = getQuestionStatus(question.id);
-              const isCurrent = index === currentQuestionIndex;
-              
-              let buttonClasses = "h-10 text-xs md:text-sm ";
-              let variant: "default" | "secondary" | "outline" | "ghost" = "outline";
-              
-              if (isCurrent) {
-                variant = "default";
-                buttonClasses += "ring-2 ring-blue-500";
-              } else if (status === "answered") {
-                variant = "secondary";
-                buttonClasses += "bg-green-500 hover:bg-green-600 text-white border-green-500";
-              } else if (status === "skipped") {
-                variant = "ghost";
-                buttonClasses += "bg-gray-400 hover:bg-gray-500 text-white border-gray-400";
-              } else {
-                variant = "outline";
-                buttonClasses += "bg-white hover:bg-gray-50 border-gray-300";
-              }
-              
-              return (
-                <Button
-                  key={question.id}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setCurrentQuestionIndex(index)}
-                  className={buttonClasses}
-                >
-                  {index + 1}
-                </Button>
-              );
-            })}
           </div>
         </CardContent>
       </Card>

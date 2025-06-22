@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Home, BarChart3, Settings } from "lucide-react";
 import { SurveyResponse, InterviewSession } from "../types/survey";
 import { SURVEY_CATEGORIES } from "../types/survey";
+import { SURVEY_QUESTIONS } from "../data/questions";
 import CategorySelector from "../components/CategorySelector";
 import QuestionInterface from "../components/QuestionInterface";
 
@@ -29,6 +30,69 @@ export const Interview = ({
   const [completedCategories, setCompletedCategories] = useState<string[]>([]);
   const [sessionId, setSessionId] = useState<string>('');
 
+  // Helper function to find the current category and question based on responses
+  const findCurrentPosition = (sessionResponses: SurveyResponse[]) => {
+    if (sessionResponses.length === 0) {
+      // No responses yet, start with first category
+      return {
+        categoryCode: SURVEY_CATEGORIES[0].code,
+        questionIndex: 0
+      };
+    }
+
+    // Find the last answered question that's not skipped or empty
+    const answeredResponses = sessionResponses.filter(r => 
+      r.answer.trim() !== "" && r.answer !== "SKIPPED"
+    );
+
+    if (answeredResponses.length === 0) {
+      // All responses are empty or skipped, start from beginning
+      return {
+        categoryCode: SURVEY_CATEGORIES[0].code,
+        questionIndex: 0
+      };
+    }
+
+    // Get the last answered question
+    const lastAnsweredResponse = answeredResponses[answeredResponses.length - 1];
+    const lastAnsweredQuestion = SURVEY_QUESTIONS.find(q => q.id === lastAnsweredResponse.questionId);
+    
+    if (!lastAnsweredQuestion) {
+      return {
+        categoryCode: SURVEY_CATEGORIES[0].code,
+        questionIndex: 0
+      };
+    }
+
+    // Find all questions in the same category
+    const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === lastAnsweredQuestion.categoryCode);
+    const questionIndex = categoryQuestions.findIndex(q => q.id === lastAnsweredQuestion.id);
+
+    // If this was the last question in the category, move to next category
+    if (questionIndex === categoryQuestions.length - 1) {
+      const currentCategoryIndex = SURVEY_CATEGORIES.findIndex(c => c.code === lastAnsweredQuestion.categoryCode);
+      if (currentCategoryIndex < SURVEY_CATEGORIES.length - 1) {
+        // Move to next category
+        return {
+          categoryCode: SURVEY_CATEGORIES[currentCategoryIndex + 1].code,
+          questionIndex: 0
+        };
+      } else {
+        // This was the last category, stay on the last question
+        return {
+          categoryCode: lastAnsweredQuestion.categoryCode,
+          questionIndex: questionIndex
+        };
+      }
+    } else {
+      // Move to next question in the same category
+      return {
+        categoryCode: lastAnsweredQuestion.categoryCode,
+        questionIndex: questionIndex + 1
+      };
+    }
+  };
+
   // Initialize session data
   useEffect(() => {
     if (loadedSession) {
@@ -38,15 +102,11 @@ export const Interview = ({
       setCompletedCategories(loadedSession.completedCategories || []);
       setSessionId(loadedSession.id);
       
-      // Set initial category based on session progress
-      if (loadedSession.responses.length > 0) {
-        // Find the last answered question to determine current category
-        const lastResponse = loadedSession.responses[loadedSession.responses.length - 1];
-        // This would need to be implemented based on your question data structure
-        setSelectedCategory(SURVEY_CATEGORIES[0].code);
-      } else {
-        setSelectedCategory(SURVEY_CATEGORIES[0].code);
-      }
+      // Find where the user left off
+      const currentPosition = findCurrentPosition(loadedSession.responses || []);
+      console.log('Resuming at position:', currentPosition);
+      
+      setSelectedCategory(currentPosition.categoryCode);
       setCurrentView('questions');
     } else {
       // Auto-start with first category for new sessions
@@ -198,6 +258,7 @@ export const Interview = ({
             onMoveToNextCategory={handleMoveToNextCategory}
             onNavigateToPreviousCategory={handleNavigateToPreviousCategory}
             onNavigateToNextCategory={handleNavigateToNextCategory}
+            initialQuestionIndex={loadedSession ? findCurrentPosition(loadedSession.responses || []).questionIndex : 0}
           />
         )}
       </div>
