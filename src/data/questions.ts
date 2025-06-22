@@ -106,14 +106,14 @@ export const SURVEY_QUESTIONS: Question[] = [
     interviewSection: '5. Payment & Income'
   },
 
-  // Work Costs
+  // Work Costs - Updated with "Other" option for percentage questions
   { 
     id: 'WC_01', 
     question: 'What proportion of your income goes to work costs?', 
     category: 'Work Costs', 
     categoryCode: 'WC', 
     type: 'multiple_choice',
-    options: ['0-10%', '10-25%', '25-50%', '50-75%', '75%+'],
+    options: ['0-10%', '10-25%', '25-50%', '50-75%', '75%+', 'Other'],
     interviewSection: '6. Work Expenses'
   },
   { id: 'WC_02', question: 'Do you pay commission or fees to the platform?', category: 'Work Costs', categoryCode: 'WC', type: 'yes_no', interviewSection: '6. Work Expenses' },
@@ -146,7 +146,7 @@ export const SURVEY_QUESTIONS: Question[] = [
     category: 'Contracts & Terms', 
     categoryCode: 'CT', 
     type: 'multiple_choice',
-    options: ['No notification', 'Same day', '1-3 days', '1 week', '2 weeks', '1 month', '2+ months'],
+    options: ['No notification', 'Same day', '1-3 days', '1 week', '2 weeks', '1 month', '2+ months', 'Other'],
     followUpTo: 'CT_06',
     interviewSection: '8. Legal Framework'
   },
