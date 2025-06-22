@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -10,8 +9,12 @@ import { SURVEY_QUESTIONS } from "../data/questions";
 import { Button } from "@/components/ui/button";
 import { BarChart3, FileText, Home, Plus, ArrowLeft, ArrowRight } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
   const [currentView, setCurrentView] = useState<'setup' | 'categories' | 'questions' | 'dashboard'>('setup');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [session, setSession] = useState<InterviewSession>({
@@ -61,6 +64,14 @@ const Index = () => {
     // Also save with a unique key for the interview list
     localStorage.setItem(`interview_session_${session.id}`, JSON.stringify(session));
   }, [session]);
+
+  // Check if we should start with dashboard view
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'dashboard') {
+      setCurrentView('dashboard');
+    }
+  }, [searchParams]);
 
   const handleGoToDashboard = () => {
     console.log("handleGoToDashboard called - navigating to dashboard");
@@ -428,6 +439,10 @@ const Index = () => {
     toast.success("Interview details updated successfully!");
   };
 
+  const handleGoToLanding = () => {
+    navigate('/');
+  };
+
   // Show setup if no interviewer is set OR if currentView is explicitly 'setup'
   if (currentView === 'setup' || (!session.interviewer && currentView !== 'dashboard')) {
     return (
@@ -435,6 +450,7 @@ const Index = () => {
         <InterviewerSetup 
           onSetup={handleInterviewerSetup} 
           onGoToDashboard={handleGoToDashboard}
+          onGoToLanding={handleGoToLanding}
         />
       </div>
     );
@@ -446,6 +462,16 @@ const Index = () => {
       <div className="w-full mb-6 mt-[2vh]">
         <div className="flex flex-col gap-4">
           <div className="flex gap-1 w-full">
+            <Button
+              variant="outline"
+              onClick={handleGoToLanding}
+              size="sm"
+              className="flex items-center gap-1 text-xs border-gray-300 text-gray-600 hover:bg-gray-50 flex-1 min-w-0 px-2 py-1 h-8"
+            >
+              <Home className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">Home</span>
+            </Button>
+            
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -480,7 +506,7 @@ const Index = () => {
               size="sm"
               className="flex items-center gap-1 text-xs flex-1 min-w-0 px-2 py-1 h-8"
             >
-              <Home className="h-3 w-3 flex-shrink-0" />
+              <FileText className="h-3 w-3 flex-shrink-0" />
               <span className="truncate">Cat</span>
             </Button>
             
