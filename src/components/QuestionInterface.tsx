@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -287,13 +286,13 @@ const QuestionInterface = ({
     <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 px-2 md:px-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 self-start">
-          <Home className="h-4 w-4" />
+        <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 self-start text-xs h-8 px-2">
+          <Home className="h-3 w-3" />
           <span className="hidden sm:inline">Back to Categories</span>
           <span className="sm:hidden">Back</span>
         </Button>
-        <Button onClick={onSave} className="flex items-center gap-2 self-start sm:self-auto">
-          <Save className="h-4 w-4" />
+        <Button onClick={onSave} className="flex items-center gap-2 self-start sm:self-auto text-xs h-8 px-2">
+          <Save className="h-3 w-3" />
           Save Progress
         </Button>
       </div>
