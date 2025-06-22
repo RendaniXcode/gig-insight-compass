@@ -487,35 +487,6 @@ const Index = () => {
             </div>
           )}
         </div>
-
-        {/* Category Navigation (only show when in questions view) */}
-        {currentView === 'questions' && selectedCategory && (
-          <div className="flex items-center justify-between mt-4 p-3 bg-white rounded-lg shadow-sm">
-            <Button
-              variant="outline"
-              onClick={navigateToPreviousCategory}
-              disabled={SURVEY_CATEGORIES.findIndex(c => c.code === selectedCategory) === 0}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Previous Category
-            </Button>
-            
-            <div className="text-sm font-medium text-gray-700">
-              {SURVEY_CATEGORIES.find(c => c.code === selectedCategory)?.name}
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={navigateToNextCategory}
-              disabled={SURVEY_CATEGORIES.findIndex(c => c.code === selectedCategory) === SURVEY_CATEGORIES.length - 1}
-              className="flex items-center gap-2"
-            >
-              Next Category
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -537,6 +508,8 @@ const Index = () => {
             onSave={handleSave}
             onCategorySaveAndNext={handleCategorySaveAndNext}
             onMoveToNextCategory={handleMoveToNextCategory}
+            onNavigateToPreviousCategory={navigateToPreviousCategory}
+            onNavigateToNextCategory={navigateToNextCategory}
           />
         )}
         

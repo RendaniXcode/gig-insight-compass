@@ -21,6 +21,8 @@ interface QuestionInterfaceProps {
   onSave: () => void;
   onCategorySaveAndNext: (categoryCode: string) => void;
   onMoveToNextCategory?: (categoryCode: string) => void;
+  onNavigateToPreviousCategory?: () => void;
+  onNavigateToNextCategory?: () => void;
 }
 
 const QuestionInterface = ({ 
@@ -30,7 +32,9 @@ const QuestionInterface = ({
   onBack,
   onSave,
   onCategorySaveAndNext,
-  onMoveToNextCategory
+  onMoveToNextCategory,
+  onNavigateToPreviousCategory,
+  onNavigateToNextCategory
 }: QuestionInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState("");
@@ -257,6 +261,18 @@ const QuestionInterface = ({
     }
   };
 
+  const navigateToPreviousCategory = () => {
+    if (onNavigateToPreviousCategory) {
+      onNavigateToPreviousCategory();
+    }
+  };
+
+  const navigateToNextCategory = () => {
+    if (onNavigateToNextCategory) {
+      onNavigateToNextCategory();
+    }
+  };
+
   if (!currentQuestion || !category) {
     return <div>Loading...</div>;
   }
@@ -273,6 +289,33 @@ const QuestionInterface = ({
         <Button onClick={onSave} className="flex items-center gap-2 self-start sm:self-auto">
           <Save className="h-4 w-4" />
           Save Progress
+        </Button>
+      </div>
+
+      {/* Category Navigation */}
+      <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
+        <Button
+          variant="outline"
+          onClick={navigateToPreviousCategory}
+          disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === 0}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Previous Category
+        </Button>
+        
+        <div className="text-sm font-medium text-gray-700">
+          {category.name}
+        </div>
+        
+        <Button
+          variant="outline"
+          onClick={navigateToNextCategory}
+          disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === SURVEY_CATEGORIES.length - 1}
+          className="flex items-center gap-2"
+        >
+          Next Category
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
 
