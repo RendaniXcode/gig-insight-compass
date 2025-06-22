@@ -67,6 +67,15 @@ const QuestionInterface = ({
     return years;
   };
 
+  const getWorkHoursOptions = () => {
+    const hours = [];
+    for (let i = 1; i <= 24; i++) {
+      hours.push(`${i} hour${i === 1 ? '' : 's'}`);
+    }
+    hours.push('Other');
+    return hours;
+  };
+
   // Reset to question 1 when category changes
   useEffect(() => {
     setCurrentQuestionIndex(0);
@@ -77,7 +86,7 @@ const QuestionInterface = ({
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
       const response = existingResponse?.answer || "";
       
-      // Handle special cases for Platform Name, Age, and Experience
+      // Handle special cases for Platform Name, Age, Experience, and Work Hours
       if (currentQuestion.id === 'BI_01') {
         // Platform Name - check if it's a custom response
         const platformOptions = getPlatformOptions();
@@ -102,6 +111,16 @@ const QuestionInterface = ({
         // Experience years - check if it's a custom response
         const experienceOptions = getExperienceYearOptions();
         if (response && !experienceOptions.includes(response)) {
+          setCurrentAnswer('Other');
+          setCustomInput(response);
+        } else {
+          setCurrentAnswer(response);
+          setCustomInput("");
+        }
+      } else if (currentQuestion.id === 'WS_01') {
+        // Work hours - check if it's a custom response
+        const workHoursOptions = getWorkHoursOptions();
+        if (response && !workHoursOptions.includes(response)) {
           setCurrentAnswer('Other');
           setCustomInput(response);
         } else {
@@ -299,7 +318,7 @@ const QuestionInterface = ({
       );
     }
 
-    // Handle special cases for Platform Name, Age, and Experience
+    // Handle special cases for Platform Name, Age, Experience, and Work Hours
     if (currentQuestion.id === 'BI_01') {
       // Platform Name dropdown
       return (
@@ -379,6 +398,35 @@ const QuestionInterface = ({
           {currentAnswer === 'Other' && (
             <Input
               placeholder="Please specify (e.g., 6 months, 2 years 3 months)..."
+              value={customInput}
+              onChange={(e) => handleCustomInputChange(e.target.value)}
+              className="text-base md:text-lg"
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (currentQuestion.id === 'WS_01') {
+      // Work hours dropdown
+      return (
+        <div className="space-y-4">
+          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
+            <SelectTrigger className="text-base md:text-lg">
+              <SelectValue placeholder="Select hours per day..." />
+            </SelectTrigger>
+            <SelectContent className="bg-white border shadow-lg z-50">
+              {getWorkHoursOptions().map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {currentAnswer === 'Other' && (
+            <Input
+              placeholder="Please specify (e.g., 30 minutes, 0.5 hours, 25 hours)..."
               value={customInput}
               onChange={(e) => handleCustomInputChange(e.target.value)}
               className="text-base md:text-lg"
