@@ -91,7 +91,7 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
   };
 
   const handleContinueInterview = () => {
-    // Navigate to interview setup or interview page
+    // Navigate to interview page without specific session (current session)
     window.location.href = '/interview';
   };
 
@@ -108,7 +108,8 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
   };
 
   const handleLoadInterview = (sessionId: string) => {
-    // Load specific interview session
+    // Load specific interview session by navigating with session parameter
+    console.log(`Loading interview session: ${sessionId}`);
     window.location.href = `/interview?session=${sessionId}`;
   };
 

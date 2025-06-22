@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, BarChart3, Settings } from "lucide-react";
-import { SurveyResponse } from "../types/survey";
+import { SurveyResponse, InterviewSession } from "../types/survey";
 import { SURVEY_CATEGORIES } from "../types/survey";
 import CategorySelector from "../components/CategorySelector";
 import QuestionInterface from "../components/QuestionInterface";
@@ -10,6 +9,7 @@ import QuestionInterface from "../components/QuestionInterface";
 interface InterviewProps {
   interviewerName: string;
   interviewerEmail: string;
+  loadedSession?: InterviewSession | null;
   onGoToDashboard: () => void;
   onGoToSetup?: () => void;
   onGoToLanding?: () => void;
@@ -18,6 +18,7 @@ interface InterviewProps {
 export const Interview = ({ 
   interviewerName, 
   interviewerEmail, 
+  loadedSession,
   onGoToDashboard,
   onGoToSetup,
   onGoToLanding
@@ -26,14 +27,36 @@ export const Interview = ({
   const [currentView, setCurrentView] = useState<'categories' | 'questions'>('questions');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [completedCategories, setCompletedCategories] = useState<string[]>([]);
+  const [sessionId, setSessionId] = useState<string>('');
 
-  // Auto-start with first category on mount
+  // Initialize session data
   useEffect(() => {
-    if (SURVEY_CATEGORIES.length > 0) {
-      setSelectedCategory(SURVEY_CATEGORIES[0].code);
+    if (loadedSession) {
+      // Load data from the specific session
+      console.log('Loading session data:', loadedSession);
+      setResponses(loadedSession.responses || []);
+      setCompletedCategories(loadedSession.completedCategories || []);
+      setSessionId(loadedSession.id);
+      
+      // Set initial category based on session progress
+      if (loadedSession.responses.length > 0) {
+        // Find the last answered question to determine current category
+        const lastResponse = loadedSession.responses[loadedSession.responses.length - 1];
+        // This would need to be implemented based on your question data structure
+        setSelectedCategory(SURVEY_CATEGORIES[0].code);
+      } else {
+        setSelectedCategory(SURVEY_CATEGORIES[0].code);
+      }
       setCurrentView('questions');
+    } else {
+      // Auto-start with first category for new sessions
+      if (SURVEY_CATEGORIES.length > 0) {
+        setSelectedCategory(SURVEY_CATEGORIES[0].code);
+        setCurrentView('questions');
+        setSessionId(`session_${Date.now()}`);
+      }
     }
-  }, []);
+  }, [loadedSession]);
 
   const handleResponseChange = (questionId: string, answer: string) => {
     setResponses(prev => {
@@ -51,7 +74,25 @@ export const Interview = ({
   };
 
   const handleSave = () => {
-    console.log('Saving responses:', responses);
+    // Create or update session in localStorage
+    const session: InterviewSession = {
+      id: sessionId,
+      interviewer: interviewerName,
+      interviewerEmail: interviewerEmail,
+      interviewDate: loadedSession?.interviewDate || new Date().toLocaleDateString(),
+      startTime: loadedSession?.startTime || new Date(),
+      lastUpdated: new Date(),
+      status: 'in-progress',
+      responses: responses,
+      completedCategories: completedCategories,
+      platformName: loadedSession?.platformName || "",
+      employmentType: loadedSession?.employmentType || "",
+      interviewCode: loadedSession?.interviewCode || "",
+      currentQuestionIndex: 0
+    };
+    
+    localStorage.setItem(`interview_session_${sessionId}`, JSON.stringify(session));
+    console.log('Session saved:', session);
   };
 
   const handleCategorySelect = (categoryCode: string) => {
@@ -108,6 +149,11 @@ export const Interview = ({
           {/* Title - centered on mobile with 5% spacing from top */}
           <div className="text-center">
             <h1 className="text-lg md:text-2xl font-bold text-gray-900">Interview Session</h1>
+            {loadedSession && (
+              <p className="text-xs text-gray-600 mt-1">
+                Continuing: {loadedSession.interviewer} - {loadedSession.interviewDate}
+              </p>
+            )}
           </div>
           
           {/* Navigation buttons - centered and compact on mobile */}
