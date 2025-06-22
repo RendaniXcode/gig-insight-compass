@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play } from "lucide-react";
+import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -14,9 +13,17 @@ interface SurveyDashboardProps {
   session: InterviewSession;
   onExport: () => void;
   onContinueInterview?: () => void;
+  onCategorySelect?: (categoryCode: string) => void;
+  onSkipCategory?: (categoryCode: string) => void;
 }
 
-const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashboardProps) => {
+const SurveyDashboard = ({ 
+  session, 
+  onExport, 
+  onContinueInterview, 
+  onCategorySelect,
+  onSkipCategory 
+}: SurveyDashboardProps) => {
   const [stats, setStats] = useState({
     totalQuestions: 0,
     answeredQuestions: 0,
@@ -78,13 +85,36 @@ const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashb
         categoryQuestions.some(q => q.id === r.questionId) && r.answer.trim() !== ""
       ).length;
       
+      // Check if category was skipped (all questions answered with "N/A")
+      const skippedInCategory = session.responses.filter(r => 
+        categoryQuestions.some(q => q.id === r.questionId) && r.answer.trim() === "N/A"
+      ).length;
+      
+      const isSkipped = skippedInCategory === categoryQuestions.length;
+      const isCompleted = answeredInCategory === categoryQuestions.length || isSkipped;
+      
       return {
         ...category,
         total: categoryQuestions.length,
         answered: answeredInCategory,
-        completion: (answeredInCategory / categoryQuestions.length) * 100
+        skipped: isSkipped,
+        completion: (answeredInCategory / categoryQuestions.length) * 100,
+        isCompleted
       };
     });
+  };
+
+  const handleCategoryClick = (categoryCode: string) => {
+    if (onCategorySelect) {
+      onCategorySelect(categoryCode);
+    }
+  };
+
+  const handleSkipCategory = (categoryCode: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent category click
+    if (onSkipCategory) {
+      onSkipCategory(categoryCode);
+    }
   };
 
   return (
@@ -210,20 +240,65 @@ const SurveyDashboard = ({ session, onExport, onContinueInterview }: SurveyDashb
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {getCategoryStats().map((category) => (
-              <Card key={category.code} className="border-l-4" style={{ borderLeftColor: category.color.replace('bg-', '#') }}>
+              <Card 
+                key={category.code} 
+                className={`border-l-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${
+                  category.isCompleted ? 'bg-gray-50' : 'hover:bg-blue-50'
+                }`}
+                style={{ borderLeftColor: category.color.replace('bg-', '#') }}
+                onClick={() => handleCategoryClick(category.code)}
+              >
                 <CardContent className="pt-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-sm">{category.name}</span>
-                      {category.completion === 100 && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <span className="font-medium text-sm leading-tight pr-2">{category.name}</span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {category.isCompleted && (
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                        )}
+                        {category.skipped && (
+                          <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                            Skipped
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between text-xs text-gray-600">
+                      <span>
+                        {category.skipped ? 'N/A' : `${category.answered} / ${category.total}`}
+                      </span>
+                      <span>
+                        {category.skipped ? 'Skipped' : `${category.completion.toFixed(0)}%`}
+                      </span>
+                    </div>
+                    
+                    {!category.skipped && (
+                      <Progress value={category.completion} className="h-2" />
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-xs h-7"
+                        onClick={() => handleCategoryClick(category.code)}
+                      >
+                        {category.isCompleted ? 'Review' : 'Start'}
+                      </Button>
+                      
+                      {!category.isCompleted && !category.skipped && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex items-center gap-1 text-xs h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                          onClick={(e) => handleSkipCategory(category.code, e)}
+                        >
+                          <SkipForward className="h-3 w-3" />
+                          Skip
+                        </Button>
                       )}
                     </div>
-                    <div className="flex justify-between text-xs text-gray-600">
-                      <span>{category.answered} / {category.total}</span>
-                      <span>{category.completion.toFixed(0)}%</span>
-                    </div>
-                    <Progress value={category.completion} className="h-2" />
                   </div>
                 </CardContent>
               </Card>

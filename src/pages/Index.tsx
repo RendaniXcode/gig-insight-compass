@@ -322,6 +322,60 @@ const Index = () => {
     toast.info("Returning to categories");
   };
 
+  const handleDashboardCategorySelect = (categoryCode: string) => {
+    setSelectedCategory(categoryCode);
+    setCurrentView('questions');
+    toast.info(`Opening ${SURVEY_CATEGORIES.find(c => c.code === categoryCode)?.name} category`);
+  };
+
+  const handleSkipCategory = (categoryCode: string) => {
+    const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
+    const categoryName = SURVEY_CATEGORIES.find(c => c.code === categoryCode)?.name;
+    
+    // Create N/A responses for all questions in the category
+    const naResponses: SurveyResponse[] = categoryQuestions.map(question => ({
+      questionId: question.id,
+      answer: "N/A",
+      timestamp: new Date()
+    }));
+
+    setSession(prev => {
+      // Remove existing responses for this category
+      const filteredResponses = prev.responses.filter(r => 
+        !categoryQuestions.some(q => q.id === r.questionId)
+      );
+      
+      // Add N/A responses
+      const newResponses = [...filteredResponses, ...naResponses];
+      
+      // Mark category as completed
+      const completedCategories = prev.completedCategories.includes(categoryCode) 
+        ? prev.completedCategories 
+        : [...prev.completedCategories, categoryCode];
+
+      // Check if all categories are completed
+      let updates: Partial<InterviewSession> = {
+        responses: newResponses,
+        completedCategories
+      };
+
+      if (completedCategories.length === SURVEY_CATEGORIES.length) {
+        const endTime = new Date();
+        updates.status = 'completed';
+        updates.endTime = endTime;
+        console.log('Interview completed at:', endTime.toISOString());
+      }
+
+      return {
+        ...prev,
+        ...updates,
+        lastUpdated: new Date()
+      };
+    });
+
+    toast.success(`${categoryName} category skipped - marked as N/A`);
+  };
+
   // Show setup if no interviewer is set
   if (currentView === 'setup' || !session.interviewer) {
     return (
@@ -446,6 +500,8 @@ const Index = () => {
             session={session}
             onExport={handleExport}
             onContinueInterview={handleContinueInterview}
+            onCategorySelect={handleDashboardCategorySelect}
+            onSkipCategory={handleSkipCategory}
           />
         )}
       </div>
