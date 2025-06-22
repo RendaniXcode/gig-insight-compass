@@ -1,9 +1,8 @@
-
 import { Question } from "../types/survey";
 
 export const SURVEY_QUESTIONS: Question[] = [
   // Basic Information
-  { id: 'BI_01', question: 'Platform Name', category: 'Basic Information', categoryCode: 'BI', type: 'text', interviewSection: '1. Opening & Background' },
+  { id: 'BI_01', question: 'Platform Name', category: 'Basic Information', categoryCode: 'BI', type: 'multiple_choice', options: ['Uber', 'Bolt', 'inDrive', 'Shesha'], interviewSection: '1. Opening & Background' },
   { id: 'BI_02', question: 'Employment Type', category: 'Basic Information', categoryCode: 'BI', type: 'multiple_choice', options: ['Employee', 'Freelancer', 'Contractor', 'Other'], interviewSection: '1. Opening & Background' },
   { id: 'BI_03', question: 'Interview Code', category: 'Basic Information', categoryCode: 'BI', type: 'text', interviewSection: '1. Opening & Background' },
   { id: 'BI_04', question: 'Interview Date', category: 'Basic Information', categoryCode: 'BI', type: 'date', interviewSection: '1. Opening & Background' },
