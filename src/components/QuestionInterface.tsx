@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -124,9 +125,36 @@ const QuestionInterface = ({
     }
   };
 
-  const handleSaveProgress = () => {
-    onSave();
-    setShowSaveDialog(true);
+  const simulateProgressSave = async () => {
+    // Simulate POST API call to backend
+    const saveData = {
+      categoryCode,
+      currentQuestionIndex,
+      responses: responses.filter(r => 
+        categoryQuestions.some(q => q.id === r.questionId)
+      ),
+      timestamp: new Date().toISOString(),
+      sessionId: `session_${Date.now()}`
+    };
+
+    console.log('POST /api/save-progress', saveData);
+    console.log('Simulating backend save...');
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    console.log('✅ Progress saved successfully to backend');
+    return saveData;
+  };
+
+  const handleSaveProgress = async () => {
+    try {
+      await simulateProgressSave();
+      onSave();
+      setShowSaveDialog(true);
+    } catch (error) {
+      console.error('Failed to save progress:', error);
+    }
   };
 
   const handleExitInterview = () => {
@@ -315,28 +343,28 @@ const QuestionInterface = ({
 
       {/* Save Progress Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent className="w-[75%] max-w-[300px] sm:max-w-[350px]">
+          <DialogHeader className="text-center">
+            <DialogTitle className="flex items-center justify-center gap-2 text-center">
               <CheckCircle className="h-5 w-5 text-green-600" />
               Progress Saved Successfully!
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-center">
               Your progress has been saved. What would you like to do next?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
               variant="outline"
               onClick={handleExitInterview}
-              className="flex items-center gap-2 w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 w-full"
             >
               <LogOut className="h-4 w-4" />
               Exit & Continue Later
             </Button>
             <Button
               onClick={handleContinueInterview}
-              className="flex items-center gap-2 w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 w-full"
             >
               <Play className="h-4 w-4" />
               Continue Interview
@@ -445,12 +473,12 @@ const QuestionInterface = ({
                     Save & Complete Category
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="sm:max-w-md text-center">
+                <AlertDialogContent className="w-[75%] max-w-[300px] sm:max-w-[350px]">
                   <AlertDialogHeader className="space-y-4 text-center">
                     <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                       <CheckCircle className="h-8 w-8 text-green-600" />
                     </div>
-                    <AlertDialogTitle className="text-2xl font-semibold text-gray-900 text-center">
+                    <AlertDialogTitle className="text-xl font-semibold text-gray-900 text-center">
                       Category Saved!
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-center text-sm text-gray-500 font-light">
