@@ -192,14 +192,12 @@ const SurveyDashboard = ({
       // If clicking the same interview, deselect it
       setSelectedInterview(null);
     } else {
-      // Select the new interview
+      // Select the new interview for viewing details only
       setSelectedInterview(interview);
     }
     
-    // Only load the interview if it's different from current session
-    if (onLoadInterview && interview.id !== session.id) {
-      onLoadInterview(interview.id);
-    }
+    // Don't automatically load/navigate - just show the details
+    // Users can click the "Continue" button if they want to actually load it
   };
 
   const getSelectedInterviewStats = () => {
@@ -229,7 +227,14 @@ const SurveyDashboard = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => selectedInterview.id === session.id ? onContinueInterview?.() : onLoadInterview?.(selectedInterview.id)}
+            onClick={() => {
+              // Only load the interview when the Continue button is clicked
+              if (selectedInterview.id === session.id) {
+                onContinueInterview?.();
+              } else {
+                onLoadInterview?.(selectedInterview.id);
+              }
+            }}
             className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 hover:border-yellow-600 flex items-center gap-1"
           >
             <Play className="h-3 w-3" />
