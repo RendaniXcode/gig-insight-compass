@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
 import SurveyDashboard from "@/components/SurveyDashboard";
@@ -10,6 +10,7 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
+  const navigate = useNavigate();
   const [currentSession, setCurrentSession] = useState<InterviewSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -91,13 +92,13 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
   };
 
   const handleContinueInterview = () => {
-    // Navigate to interview page without specific session (current session)
-    window.location.href = '/interview';
+    // Navigate to interview page using React Router
+    navigate('/interview');
   };
 
   const handleCategorySelect = (categoryCode: string) => {
-    // Navigate to interview with specific category
-    window.location.href = `/interview?category=${categoryCode}`;
+    // Navigate to interview with specific category using React Router
+    navigate(`/interview?category=${categoryCode}`);
   };
 
   const handleSkipCategory = (categoryCode: string) => {
@@ -108,9 +109,9 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
   };
 
   const handleLoadInterview = (sessionId: string) => {
-    // Load specific interview session by navigating with session parameter
+    // Load specific interview session using React Router
     console.log(`Loading interview session: ${sessionId}`);
-    window.location.href = `/interview?session=${sessionId}`;
+    navigate(`/interview?session=${sessionId}`);
   };
 
   const handleUpdateSession = (updates: Partial<InterviewSession>) => {
