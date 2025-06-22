@@ -51,6 +51,31 @@ const QuestionInterface = ({
   const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
   const hasAnsweredCurrentQuestion = currentAnswer && currentAnswer.trim() !== "";
 
+  // Calculate overall progress across all categories
+  const calculateOverallProgress = () => {
+    const totalQuestions = SURVEY_QUESTIONS.length;
+    const answeredQuestions = responses.filter(r => r.answer && r.answer.trim() !== "").length;
+    return (answeredQuestions / totalQuestions) * 100;
+  };
+
+  const overallProgress = calculateOverallProgress();
+
+  // Calculate current position in overall interview
+  const getCurrentOverallPosition = () => {
+    const currentCategoryIndex = SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode);
+    let questionsBeforeCurrentCategory = 0;
+    
+    for (let i = 0; i < currentCategoryIndex; i++) {
+      const catQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === SURVEY_CATEGORIES[i].code);
+      questionsBeforeCurrentCategory += catQuestions.length;
+    }
+    
+    return questionsBeforeCurrentCategory + currentQuestionIndex + 1;
+  };
+
+  const currentOverallPosition = getCurrentOverallPosition();
+  const totalQuestions = SURVEY_QUESTIONS.length;
+
   // Special dropdown options for specific questions
   const getPlatformOptions = () => ['UBER', 'BOLT', 'iDrive', 'Shesha', 'Other'];
   
@@ -543,6 +568,17 @@ const QuestionInterface = ({
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 px-2 md:px-0">
+      {/* Overall Progress Bar */}
+      <div className="bg-white rounded-lg shadow-sm p-4 border">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium text-gray-700">Overall Interview Progress</span>
+          <span className="text-sm text-gray-600">
+            {Math.round(overallProgress)}% Complete ({currentOverallPosition} of {totalQuestions})
+          </span>
+        </div>
+        <Progress value={overallProgress} className="h-3" />
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 self-start text-xs h-8 px-2">
@@ -617,7 +653,7 @@ const QuestionInterface = ({
         </div>
       </div>
 
-      {/* Progress */}
+      {/* Current Category Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-gray-600">
           <span className="font-medium">{category.name}</span>
