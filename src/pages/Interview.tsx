@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Home, User, BarChart3, Settings } from "lucide-react";
+import { Home, BarChart3, Settings } from "lucide-react";
 import { SurveyResponse } from "../types/survey";
 import { SURVEY_CATEGORIES } from "../types/survey";
 import CategorySelector from "../components/CategorySelector";
@@ -125,21 +124,6 @@ export const Interview = ({
             )}
           </div>
         </div>
-        
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Interviewer Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p><strong>Name:</strong> {interviewerName}</p>
-              {interviewerEmail && <p><strong>Email:</strong> {interviewerEmail}</p>}
-            </div>
-          </CardContent>
-        </Card>
 
         {currentView === 'categories' && (
           <CategorySelector
