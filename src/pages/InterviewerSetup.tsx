@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Mail, BarChart3 } from "lucide-react";
+import { User, Mail, BarChart3, Home } from "lucide-react";
 
 interface InterviewerSetupProps {
   onSetup: (interviewer: string, email?: string) => void;
   onGoToDashboard?: () => void;
+  onGoToLanding?: () => void;
 }
 
-export const InterviewerSetup = ({ onSetup, onGoToDashboard }: InterviewerSetupProps) => {
+export const InterviewerSetup = ({ onSetup, onGoToDashboard, onGoToLanding }: InterviewerSetupProps) => {
   const [interviewerType, setInterviewerType] = useState("");
   const [customInterviewer, setCustomInterviewer] = useState("");
   const [email, setEmail] = useState("");
@@ -58,80 +59,93 @@ export const InterviewerSetup = ({ onSetup, onGoToDashboard }: InterviewerSetupP
   };
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 py-4">
-      <Card className="w-full">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-center text-lg sm:text-xl">Setup Interview Session</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 sm:px-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="interviewer-select" className="flex items-center gap-2 text-sm">
-                <User className="h-4 w-4 flex-shrink-0" />
-                <span>Interviewer Name *</span>
-              </Label>
-              <Select value={interviewerType} onValueChange={handleInterviewerChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select interviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rendani">Rendani Tshivhangani</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-md mx-auto">
+        {/* Navigation */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-xl font-bold text-gray-900">Setup Interview</h1>
+          {onGoToLanding && (
+            <Button variant="outline" onClick={onGoToLanding} className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+          )}
+        </div>
 
-            {interviewerType === "other" && (
+        <Card className="w-full">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-center text-lg sm:text-xl">Setup Interview Session</CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="custom-interviewer" className="text-sm">
-                  Custom Interviewer Name *
+                <Label htmlFor="interviewer-select" className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 flex-shrink-0" />
+                  <span>Interviewer Name *</span>
+                </Label>
+                <Select value={interviewerType} onValueChange={handleInterviewerChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select interviewer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rendani">Rendani Tshivhangani</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {interviewerType === "other" && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-interviewer" className="text-sm">
+                    Custom Interviewer Name *
+                  </Label>
+                  <Input
+                    id="custom-interviewer"
+                    type="text"
+                    value={customInterviewer}
+                    onChange={(e) => setCustomInterviewer(e.target.value)}
+                    placeholder="Enter interviewer name"
+                    className="w-full"
+                    required
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-2 text-sm">
+                  <Mail className="h-4 w-4 flex-shrink-0" />
+                  <span>Email (Optional)</span>
                 </Label>
                 <Input
-                  id="custom-interviewer"
-                  type="text"
-                  value={customInterviewer}
-                  onChange={(e) => setCustomInterviewer(e.target.value)}
-                  placeholder="Enter interviewer name"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter email address"
                   className="w-full"
-                  required
+                  readOnly={interviewerType === "rendani"}
                 />
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2 text-sm">
-                <Mail className="h-4 w-4 flex-shrink-0" />
-                <span>Email (Optional)</span>
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter email address"
-                className="w-full"
-                readOnly={interviewerType === "rendani"}
-              />
-            </div>
-            
-            <div className="space-y-3 pt-2">
-              <Button type="submit" className="w-full" disabled={!isFormValid()}>
-                Start Interview Session
-              </Button>
               
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full flex items-center gap-2" 
-                onClick={handleViewExistingInterviews}
-              >
-                <BarChart3 className="h-4 w-4" />
-                View Existing Interviews
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="space-y-3 pt-2">
+                <Button type="submit" className="w-full" disabled={!isFormValid()}>
+                  Start Interview Session
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full flex items-center gap-2" 
+                  onClick={handleViewExistingInterviews}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  View Existing Interviews
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
