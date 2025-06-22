@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -212,14 +213,16 @@ const SurveyDashboard = ({
   };
 
   const handleCategoryClick = (categoryCode: string) => {
-    if (onCategorySelect) {
+    // Only allow navigation for the current active session, not for selected interview viewing
+    if (!selectedInterview && onCategorySelect) {
       onCategorySelect(categoryCode);
     }
   };
 
   const handleSkipCategory = (categoryCode: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent category click
-    if (onSkipCategory) {
+    // Only allow skipping for the current active session, not for selected interview viewing
+    if (!selectedInterview && onSkipCategory) {
       onSkipCategory(categoryCode);
     }
   };
@@ -508,8 +511,13 @@ const SurveyDashboard = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {getCategoryStats().map((category) => {
               // Determine card background and border color based on status
-              let cardClasses = "border-l-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ";
+              let cardClasses = "border-l-4 transition-all duration-200 hover:shadow-md ";
               let borderColor = category.color.replace('bg-', '#');
+              
+              // Only make clickable if not viewing a selected interview
+              if (!selectedInterview) {
+                cardClasses += "cursor-pointer hover:scale-[1.02] ";
+              }
               
               switch (category.status) {
                 case 'completed':
@@ -525,7 +533,10 @@ const SurveyDashboard = ({
                   borderColor = '#eab308';
                   break;
                 default:
-                  cardClasses += "bg-white border-gray-300 hover:bg-blue-50";
+                  cardClasses += "bg-white border-gray-300";
+                  if (!selectedInterview) {
+                    cardClasses += " hover:bg-blue-50";
+                  }
                   borderColor = '#d1d5db';
               }
               
@@ -570,28 +581,34 @@ const SurveyDashboard = ({
                         <Progress value={category.completion} className="h-2" />
                       )}
                       
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 text-xs h-7"
-                          onClick={() => handleCategoryClick(category.code)}
-                        >
-                          {category.isCompleted ? 'Review' : 'Start'}
-                        </Button>
-                        
-                        {!category.isCompleted && !category.skipped && (
+                      {/* Only show action buttons if not viewing a selected interview */}
+                      {!selectedInterview && (
+                        <div className="flex gap-2">
                           <Button
                             size="sm"
-                            variant="ghost"
-                            className="flex items-center gap-1 text-xs h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                            onClick={(e) => handleSkipCategory(category.code, e)}
+                            variant="outline"
+                            className="flex-1 text-xs h-7"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCategoryClick(category.code);
+                            }}
                           >
-                            <SkipForward className="h-3 w-3" />
-                            Skip
+                            {category.isCompleted ? 'Review' : 'Start'}
                           </Button>
-                        )}
-                      </div>
+                          
+                          {!category.isCompleted && !category.skipped && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="flex items-center gap-1 text-xs h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                              onClick={(e) => handleSkipCategory(category.code, e)}
+                            >
+                              <SkipForward className="h-3 w-3" />
+                              Skip
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -605,3 +622,4 @@ const SurveyDashboard = ({
 };
 
 export default SurveyDashboard;
+
