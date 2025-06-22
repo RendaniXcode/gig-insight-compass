@@ -9,6 +9,7 @@ import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface SurveyDashboardProps {
   session: InterviewSession;
@@ -197,58 +198,68 @@ const SurveyDashboard = ({
         <p className="text-gray-600">Survey progress and session overview</p>
       </div>
 
-      {/* Interview List Section */}
+      {/* Interview List Section with Accordion */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <List className="h-5 w-5" />
-            All Interviews
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {allInterviews.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Interviewer</TableHead>
-                  <TableHead>Platform</TableHead>
-                  <TableHead>Interview Code</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Duration</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {allInterviews.map((interview) => (
-                  <TableRow 
-                    key={interview.id} 
-                    className={`cursor-pointer hover:bg-gray-50 ${interview.id === session.id ? 'bg-blue-50' : ''}`}
-                    onClick={() => handleInterviewClick(interview.id)}
-                  >
-                    <TableCell className="font-medium">{interview.interviewer}</TableCell>
-                    <TableCell>{interview.platformName || "Not specified"}</TableCell>
-                    <TableCell>{interview.interviewCode || interview.id.slice(-8)}</TableCell>
-                    <TableCell>{getInterviewStatusBadge(interview.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={getInterviewProgress(interview)} className="w-16 h-2" />
-                        <span className="text-xs text-gray-600">{getInterviewProgress(interview)}%</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{interview.interviewDate}</TableCell>
-                    <TableCell>{formatDuration(interview.startTime, interview.endTime)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No interviews found</p>
-            </div>
-          )}
-        </CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="interviews" className="border-none">
+            <CardHeader className="pb-0">
+              <AccordionTrigger className="hover:no-underline">
+                <CardTitle className="flex items-center gap-2">
+                  <List className="h-5 w-5" />
+                  All Interviews
+                </CardTitle>
+              </AccordionTrigger>
+            </CardHeader>
+            <AccordionContent>
+              <CardContent>
+                {allInterviews.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Interviewer</TableHead>
+                        <TableHead>Platform</TableHead>
+                        <TableHead>Interview Code</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Progress</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Duration</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allInterviews.map((interview, index) => (
+                        <TableRow 
+                          key={interview.id} 
+                          className={`cursor-pointer hover:bg-gray-50 ${interview.id === session.id ? 'bg-blue-50' : ''}`}
+                          onClick={() => handleInterviewClick(interview.id)}
+                        >
+                          <TableCell className="font-medium">{index + 1}</TableCell>
+                          <TableCell className="font-medium">{interview.interviewer}</TableCell>
+                          <TableCell>{interview.platformName || "Not specified"}</TableCell>
+                          <TableCell>{interview.interviewCode || interview.id.slice(-8)}</TableCell>
+                          <TableCell>{getInterviewStatusBadge(interview.status)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={getInterviewProgress(interview)} className="w-16 h-2" />
+                              <span className="text-xs text-gray-600">{getInterviewProgress(interview)}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{interview.interviewDate}</TableCell>
+                          <TableCell>{formatDuration(interview.startTime, interview.endTime)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No interviews found</p>
+                  </div>
+                )}
+              </CardContent>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </Card>
 
       {/* Combined Interview Status and Session Information */}
