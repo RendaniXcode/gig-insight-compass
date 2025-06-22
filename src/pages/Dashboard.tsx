@@ -152,8 +152,7 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Interview Dashboard</h1>
+        <div className="flex justify-end items-center mb-6">
           <Button variant="outline" onClick={onGoToLanding} className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             Home
