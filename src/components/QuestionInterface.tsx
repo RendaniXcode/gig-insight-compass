@@ -51,6 +51,13 @@ const QuestionInterface = ({
   const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
   const hasAnsweredCurrentQuestion = currentAnswer && currentAnswer.trim() !== "";
 
+  // Special dropdown options for specific questions
+  const getPlatformOptions = () => ['UBER', 'BOLT', 'iDrive', 'Shesha', 'Other'];
+  
+  const getAgeRangeOptions = () => [
+    '18-24', '25-34', '35-44', '45-54', '55-64', '65+', 'Other'
+  ];
+
   // Reset to question 1 when category changes
   useEffect(() => {
     setCurrentQuestionIndex(0);
@@ -61,13 +68,36 @@ const QuestionInterface = ({
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
       const response = existingResponse?.answer || "";
       
-      // Check if it's a custom "Other" response
-      if (currentQuestion.options?.includes('Other') && response && !currentQuestion.options.includes(response)) {
-        setCurrentAnswer('Other');
-        setCustomInput(response);
+      // Handle special cases for Platform Name and Age
+      if (currentQuestion.id === 'BI_01') {
+        // Platform Name - check if it's a custom response
+        const platformOptions = getPlatformOptions();
+        if (response && !platformOptions.includes(response)) {
+          setCurrentAnswer('Other');
+          setCustomInput(response);
+        } else {
+          setCurrentAnswer(response);
+          setCustomInput("");
+        }
+      } else if (currentQuestion.id === 'PB_01') {
+        // Age - check if it's a custom response
+        const ageOptions = getAgeRangeOptions();
+        if (response && !ageOptions.includes(response)) {
+          setCurrentAnswer('Other');
+          setCustomInput(response);
+        } else {
+          setCurrentAnswer(response);
+          setCustomInput("");
+        }
       } else {
-        setCurrentAnswer(response);
-        setCustomInput("");
+        // Check if it's a custom "Other" response for regular questions
+        if (currentQuestion.options?.includes('Other') && response && !currentQuestion.options.includes(response)) {
+          setCurrentAnswer('Other');
+          setCustomInput(response);
+        } else {
+          setCurrentAnswer(response);
+          setCustomInput("");
+        }
       }
     }
   }, [currentQuestion, responses]);
@@ -250,6 +280,67 @@ const QuestionInterface = ({
       );
     }
 
+    // Handle special cases for Platform Name and Age
+    if (currentQuestion.id === 'BI_01') {
+      // Platform Name dropdown
+      return (
+        <div className="space-y-4">
+          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
+            <SelectTrigger className="text-base md:text-lg">
+              <SelectValue placeholder="Select a platform..." />
+            </SelectTrigger>
+            <SelectContent className="bg-white border shadow-lg z-50">
+              {getPlatformOptions().map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {currentAnswer === 'Other' && (
+            <Input
+              placeholder="Please specify the platform name..."
+              value={customInput}
+              onChange={(e) => handleCustomInputChange(e.target.value)}
+              className="text-base md:text-lg"
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (currentQuestion.id === 'PB_01') {
+      // Age range dropdown
+      return (
+        <div className="space-y-4">
+          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
+            <SelectTrigger className="text-base md:text-lg">
+              <SelectValue placeholder="Select age range..." />
+            </SelectTrigger>
+            <SelectContent className="bg-white border shadow-lg z-50">
+              {getAgeRangeOptions().map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {currentAnswer === 'Other' && (
+            <Input
+              type="number"
+              placeholder="Please enter your age..."
+              value={customInput}
+              onChange={(e) => handleCustomInputChange(e.target.value)}
+              className="text-base md:text-lg"
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Regular question handling
     const questionType = currentQuestion.type || 'textarea';
     
     switch (questionType) {
