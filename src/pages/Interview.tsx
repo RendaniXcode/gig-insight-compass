@@ -167,7 +167,7 @@ export const Interview = ({
             <h1 className="text-lg md:text-2xl font-bold text-gray-900">Interview Session</h1>
             {session && (
               <p className="text-xs text-gray-600 mt-1">
-                {session.interviewer} - {session.interviewDate} {session.status === 'in_progress' && isLoading && (
+                {session.interviewer} - {session.interviewDate} {session.status === 'in-progress' && isLoading && (
                   <Loader2 className="h-3 w-3 animate-spin inline ml-1" />
                 )}
               </p>
