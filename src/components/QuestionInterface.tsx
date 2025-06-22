@@ -49,6 +49,11 @@ const QuestionInterface = ({
   const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
   const hasAnsweredCurrentQuestion = currentAnswer && currentAnswer.trim() !== "";
 
+  // Reset to question 1 when category changes
+  useEffect(() => {
+    setCurrentQuestionIndex(0);
+  }, [categoryCode]);
+
   useEffect(() => {
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
@@ -420,7 +425,7 @@ const QuestionInterface = ({
         </CardContent>
       </Card>
 
-      {/* Question Navigation */}
+      {/* Question Overview */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Question Overview</CardTitle>
