@@ -18,7 +18,7 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'PO_03', question: 'How does income compare to your previous job?', category: 'Platform Overview', categoryCode: 'PO', type: 'multiple_choice', options: ['Much better', 'Better', 'About the same', 'Worse', 'Much worse', 'N/A - First job', 'Other'] },
 
   // Work Structure
-  { id: 'WS_01', question: 'How many hours per day do you work on this platform?', category: 'Work Structure', categoryCode: 'WS', type: 'multiple_choice', options: ['1 hour', '2 hours', '3 hours', '4 hours', '5 hours', '6 hours', '7 hours', '8 hours', '9 hours', '10 hours', '11 hours', '12 hours', '13 hours', '14 hours', '15 hours', '16 hours', '17 hours', '18 hours', '19 hours', '20 hours', '21 hours', '22 hours', '23 hours', '24 hours'] },
+  { id: 'WS_01', question: 'How many hours per day do you work on this platform?', category: 'Work Structure', categoryCode: 'WS', type: 'textarea' },
   { id: 'WS_02', question: 'Are you paid hourly or per task/service?', category: 'Work Structure', categoryCode: 'WS', type: 'multiple_choice', options: ['Hourly', 'Per task', 'Per service', 'Commission based', 'Fixed salary', 'Other'] },
   { id: 'WS_03', question: 'How does the app assign tasks?', category: 'Work Structure', categoryCode: 'WS', type: 'textarea' },
   { id: 'WS_04', question: 'If you don\'t want a task can you cancel without penalty?', category: 'Work Structure', categoryCode: 'WS', type: 'yes_no' },
