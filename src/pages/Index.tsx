@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -441,8 +442,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-2">
-      {/* Mobile-First Navigation */}
-      <div className="w-full mb-4">
+      {/* Mobile-First Navigation with top margin */}
+      <div className="w-full mb-4 mt-[12vh]">
         <div className="flex flex-col gap-2">
           <div className="flex gap-1 w-full">
             <AlertDialog>
