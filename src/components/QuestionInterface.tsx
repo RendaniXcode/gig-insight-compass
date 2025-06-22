@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -289,14 +288,14 @@ const QuestionInterface = ({
           className="flex items-center gap-1 text-xs"
         >
           <ChevronLeft className="h-3 w-3" />
-          Prev Category
+          <span className="hidden sm:inline">Prev Category</span>
         </Button>
         
         <div className="flex items-center gap-2">
           <div 
             className={`w-3 h-3 rounded-full ${category?.color || 'bg-blue-500'}`}
           />
-          <span className="font-medium text-sm">{category?.name}</span>
+          <span className="font-medium text-sm text-center">{category?.name}</span>
           <span className="text-sm text-gray-500">
             {currentQuestionIndex + 1} of {categoryQuestions.length}
           </span>
@@ -308,7 +307,7 @@ const QuestionInterface = ({
           onClick={onNavigateToNextCategory}
           className="flex items-center gap-1 text-xs"
         >
-          Next Category
+          <span className="hidden sm:inline">Next Category</span>
           <ChevronRight className="h-3 w-3" />
         </Button>
       </div>
@@ -316,47 +315,38 @@ const QuestionInterface = ({
       {/* Question Card */}
       <Card className="w-full">
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-lg leading-tight mb-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline" className="text-xs">
-                    {currentQuestion.id}
-                  </Badge>
-                  <Badge 
-                    className={`text-xs ${
-                      getAnswerStatus() === 'answered' ? 'bg-green-500 hover:bg-green-600' :
-                      getAnswerStatus() === 'skipped' ? 'bg-yellow-500 hover:bg-yellow-600' :
-                      'bg-gray-500 hover:bg-gray-600'
-                    }`}
-                  >
-                    {getAnswerStatus() === 'answered' && <CheckCircle className="h-3 w-3 mr-1" />}
-                    {getAnswerStatus() === 'skipped' && <AlertCircle className="h-3 w-3 mr-1" />}
-                    {getAnswerStatus().charAt(0).toUpperCase() + getAnswerStatus().slice(1)}
-                  </Badge>
-                </div>
+          <div className="space-y-3">
+            {/* Question ID and Title Row */}
+            <div className="flex items-start gap-3">
+              <Badge variant="outline" className="text-xs flex-shrink-0">
+                {currentQuestion.id}
+              </Badge>
+              <CardTitle className="text-lg leading-tight flex-1">
                 {currentQuestion.question}
               </CardTitle>
             </div>
             
-            <div className="flex items-center gap-2">
+            {/* Action Buttons Row - Mobile Responsive */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSkip}
-                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1 text-xs"
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1 text-xs order-2 sm:order-1"
               >
                 <SkipForward className="h-3 w-3" />
                 Skip This Question
               </Button>
+              
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onSave}
-                className="flex items-center gap-1 text-xs"
+                className="flex items-center gap-1 text-xs order-1 sm:order-2"
               >
                 <Save className="h-3 w-3" />
-                Save Progress
+                <span className="hidden sm:inline">Save Progress</span>
+                <span className="sm:hidden">Save</span>
               </Button>
             </div>
           </div>
@@ -377,7 +367,7 @@ const QuestionInterface = ({
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </Button>
             
             <div className="text-sm text-gray-500 text-center">
@@ -389,7 +379,7 @@ const QuestionInterface = ({
                 onClick={handleNext}
                 className="flex items-center gap-2"
               >
-                Next
+                <span className="hidden sm:inline">Next</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
@@ -399,7 +389,8 @@ const QuestionInterface = ({
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >
                     <Database className="h-4 w-4" />
-                    Complete Category
+                    <span className="hidden sm:inline">Complete Category</span>
+                    <span className="sm:hidden">Complete</span>
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -429,7 +420,7 @@ const QuestionInterface = ({
       <Card className="w-full">
         <CardContent className="p-4">
           <h3 className="text-lg font-semibold mb-4">Question Overview</h3>
-          <div className="grid grid-cols-8 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
             {categoryQuestions.map((_, index) => {
               const status = getQuestionStatus(index);
               return (
