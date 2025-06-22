@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,13 +75,21 @@ const QuestionInterface = ({
     }
   }, [initialQuestionIndex, categoryQuestions.length]);
 
-  // Load existing response when question changes
+  // Load existing response when question changes - this is the key fix
   useEffect(() => {
+    console.log('Question changed, loading response for:', currentQuestion?.id);
+    
+    // Always reset states first to prevent carryover
+    setCurrentAnswer('');
+    setOtherText('');
+    
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
+      console.log('Found existing response:', existingResponse);
       
-      if (existingResponse && existingResponse.answer) {
+      if (existingResponse && existingResponse.answer && existingResponse.answer.trim() !== '') {
         const answer = existingResponse.answer;
+        console.log('Loading answer:', answer);
         
         // Check if it's an "Other:" response for multiple choice
         if (answer.startsWith('Other: ')) {
@@ -88,15 +97,10 @@ const QuestionInterface = ({
           setOtherText(answer.substring(7)); // Remove "Other: " prefix
         } else {
           setCurrentAnswer(answer);
-          setOtherText('');
         }
-      } else {
-        // Reset states when no existing response or empty answer
-        setCurrentAnswer('');
-        setOtherText('');
       }
     }
-  }, [currentQuestion?.id, responses]); // Changed dependency to currentQuestion?.id to ensure it runs when question changes
+  }, [currentQuestion?.id]); // Only depend on question ID to ensure it runs when question changes
 
   // Auto-save response when answer changes
   useEffect(() => {
@@ -108,6 +112,7 @@ const QuestionInterface = ({
         finalAnswer = `Other: ${otherText.trim()}`;
       }
       
+      console.log('Auto-saving response:', finalAnswer, 'for question:', currentQuestion.id);
       onResponseChange(currentQuestion.id, finalAnswer);
       onSave();
     }
@@ -446,7 +451,7 @@ const QuestionInterface = ({
                     </div>
                     <AlertDialogTitle className="text-lg">Category Completed!</AlertDialogTitle>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="flex justify-center gap-4 sm:gap-6">
+                  <AlertDialogFooter className="flex flex-row justify-center gap-4">
                     <AlertDialogCancel className="px-6 py-2 min-w-[100px]">Stay Here</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={handleSaveAndNext}
