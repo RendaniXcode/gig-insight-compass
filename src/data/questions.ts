@@ -8,7 +8,7 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'BI_04', question: 'Interview Date', category: 'Basic Information', categoryCode: 'BI', type: 'date', interviewSection: '1. Opening & Background' },
 
   // Personal Background
-  { id: 'PB_01', question: 'Age', category: 'Personal Background', categoryCode: 'PB', type: 'number', interviewSection: '1. Opening & Background' },
+  { id: 'PB_01', question: 'Age', category: 'Personal Background', categoryCode: 'PB', type: 'multiple_choice', options: ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'], interviewSection: '1. Opening & Background' },
   { id: 'PB_02', question: 'Highest education level', category: 'Personal Background', categoryCode: 'PB', type: 'multiple_choice', options: ['Primary/Elementary', 'Secondary/High School', 'Vocational/Trade School', 'Bachelor\'s Degree', 'Master\'s Degree', 'Doctoral Degree', 'Other'], interviewSection: '1. Opening & Background' },
 
   // Platform Introduction
