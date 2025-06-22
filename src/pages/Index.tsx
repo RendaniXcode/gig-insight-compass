@@ -424,39 +424,44 @@ const Index = () => {
   // Show setup if no interviewer is set
   if (currentView === 'setup' || !session.interviewer) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <InterviewerSetup onSetup={handleInterviewerSetup} />
+      <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-8 sm:px-4">
+        <InterviewerSetup 
+          onSetup={handleInterviewerSetup} 
+          onGoToDashboard={handleGoToDashboard}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 md:py-8 px-2 md:px-4">
+    <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-8 sm:px-4">
       {/* Enhanced Navigation */}
-      <div className="max-w-6xl mx-auto mb-4 md:mb-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+      <div className="w-full max-w-6xl mx-auto mb-4 sm:mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 min-w-0">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="flex items-center gap-2 whitespace-nowrap border-green-500 text-green-600 hover:bg-green-50"
+                  size="sm"
+                  className="flex items-center gap-2 whitespace-nowrap border-green-500 text-green-600 hover:bg-green-50 flex-shrink-0"
                 >
                   <Plus className="h-4 w-4" />
-                  New Interview
+                  <span className="hidden xs:inline">New Interview</span>
+                  <span className="xs:hidden">New</span>
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="mx-4 max-w-md">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Start New Interview?</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-lg">Start New Interview?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-sm">
                     This will clear the current session and start a completely new interview. 
                     Make sure you've exported any data you need from the current session.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleStartNewInterview}>
+                <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+                  <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleStartNewInterview} className="w-full sm:w-auto">
                     Start New Interview
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -466,23 +471,27 @@ const Index = () => {
             <Button
               variant={currentView === 'categories' ? 'default' : 'outline'}
               onClick={handleHomeClick}
-              className="flex items-center gap-2 whitespace-nowrap"
+              size="sm"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
             >
               <Home className="h-4 w-4" />
-              Categories
+              <span className="hidden xs:inline">Categories</span>
+              <span className="xs:hidden">Cat</span>
             </Button>
             <Button
               variant={currentView === 'dashboard' ? 'default' : 'outline'}
               onClick={() => setCurrentView('dashboard')}
-              className="flex items-center gap-2 whitespace-nowrap"
+              size="sm"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
             >
               <BarChart3 className="h-4 w-4" />
-              Dashboard
+              <span className="hidden xs:inline">Dashboard</span>
+              <span className="xs:hidden">Dash</span>
             </Button>
           </div>
           
           {session.responses.length > 0 && (
-            <div className="text-sm text-gray-600 text-center sm:text-right">
+            <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-right flex-shrink-0">
               Progress: {Math.round((session.responses.filter(r => r.answer.trim()).length / SURVEY_QUESTIONS.length) * 100)}%
             </div>
           )}
@@ -490,7 +499,7 @@ const Index = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto">
+      <div className="w-full max-w-6xl mx-auto">
         {currentView === 'categories' && (
           <CategorySelector
             selectedCategory={selectedCategory}
