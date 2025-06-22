@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -119,14 +120,50 @@ const SurveyDashboard = ({
     }
   };
 
-  const getInterviewStatusBadge = (status: string) => {
-    switch (status) {
+  const getInterviewStatusBadge = (interview: InterviewSession) => {
+    switch (interview.status) {
       case 'completed':
         return <Badge className="bg-green-500 hover:bg-green-600 text-xs">Completed</Badge>;
       case 'in-progress':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-xs">In Progress</Badge>;
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (interview.id === session.id) {
+                onContinueInterview?.();
+              } else {
+                onLoadInterview?.(interview.id);
+              }
+            }}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 hover:border-yellow-600 flex items-center gap-1 text-xs h-6"
+          >
+            <Play className="h-3 w-3" />
+            Continue
+          </Button>
+        );
+      case 'not-started':
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (interview.id === session.id) {
+                onContinueInterview?.();
+              } else {
+                onLoadInterview?.(interview.id);
+              }
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600 flex items-center gap-1 text-xs h-6"
+          >
+            <Play className="h-3 w-3" />
+            Start
+          </Button>
+        );
       default:
-        return <Badge className="bg-gray-500 hover:bg-gray-600 text-xs">Not Started</Badge>;
+        return <Badge className="bg-gray-500 hover:bg-gray-600 text-xs">Unknown</Badge>;
     }
   };
 
@@ -221,7 +258,7 @@ const SurveyDashboard = ({
     
     switch (selectedInterview.status) {
       case 'completed':
-        return <Badge className="bg-green-500 hover:bg-green-600">Completed</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600">Completed (View Only)</Badge>;
       case 'in-progress':
         return (
           <Button
@@ -241,8 +278,27 @@ const SurveyDashboard = ({
             In Progress - Continue
           </Button>
         );
+      case 'not-started':
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Only load the interview when the Start button is clicked
+              if (selectedInterview.id === session.id) {
+                onContinueInterview?.();
+              } else {
+                onLoadInterview?.(selectedInterview.id);
+              }
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600 flex items-center gap-1"
+          >
+            <Play className="h-3 w-3" />
+            Start Interview
+          </Button>
+        );
       default:
-        return <Badge className="bg-gray-500 hover:bg-gray-600">Not Started</Badge>;
+        return <Badge className="bg-gray-500 hover:bg-gray-600">Unknown Status</Badge>;
     }
   };
 
@@ -295,7 +351,7 @@ const SurveyDashboard = ({
                           <TableCell className="font-medium">{interview.interviewer}</TableCell>
                           <TableCell>{interview.platformName || "Not specified"}</TableCell>
                           <TableCell>{interview.interviewCode || interview.id.slice(-8)}</TableCell>
-                          <TableCell>{getInterviewStatusBadge(interview.status)}</TableCell>
+                          <TableCell>{getInterviewStatusBadge(interview)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Progress value={getInterviewProgress(interview)} className="w-16 h-2" />
