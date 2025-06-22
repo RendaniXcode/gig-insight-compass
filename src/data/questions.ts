@@ -1,3 +1,4 @@
+
 import { Question } from "../types/survey";
 
 export const SURVEY_QUESTIONS: Question[] = [
@@ -16,7 +17,15 @@ export const SURVEY_QUESTIONS: Question[] = [
   { id: 'BI_04', question: 'Interview Date', category: 'Basic Information', categoryCode: 'BI', type: 'date', interviewSection: '1. Opening & Background' },
 
   // Personal Background
-  { id: 'PB_01', question: 'Age', category: 'Personal Background', categoryCode: 'PB', type: 'number', interviewSection: '1. Opening & Background' },
+  { 
+    id: 'PB_01', 
+    question: 'Age', 
+    category: 'Personal Background', 
+    categoryCode: 'PB', 
+    type: 'multiple_choice',
+    options: ['18-25', '26-35', '36-45', '46-55', '56-65', '65+', 'Other'],
+    interviewSection: '1. Opening & Background'
+  },
   { 
     id: 'PB_02', 
     question: 'Highest education level', 
