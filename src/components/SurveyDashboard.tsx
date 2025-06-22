@@ -6,23 +6,17 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward, List, Edit2, Save, X } from "lucide-react";
+import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar as CalendarIcon, Play, SkipForward, List, Edit2, Save, X } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
-interface SurveyDashboardProps {
-  session: InterviewSession;
-  onExport: () => void;
-  onContinueInterview?: () => void;
-  onCategorySelect?: (categoryCode: string) => void;
-  onSkipCategory?: (categoryCode: string) => void;
-  onLoadInterview?: (sessionId: string) => void;
-  onUpdateSession?: (updates: Partial<InterviewSession>) => void;
-}
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const PLATFORM_OPTIONS = [
   "UBER",
@@ -38,6 +32,16 @@ const EMPLOYMENT_TYPE_OPTIONS = [
   "Contractor",
   "Other"
 ];
+
+const SurveyDashboardProps = {
+  session: InterviewSession,
+  onExport: () => void,
+  onContinueInterview?: () => void,
+  onCategorySelect?: (categoryCode: string) => void,
+  onSkipCategory?: (categoryCode: string) => void,
+  onLoadInterview?: (sessionId: string) => void,
+  onUpdateSession?: (updates: Partial<InterviewSession>) => void
+};
 
 const SurveyDashboard = ({ 
   session, 
@@ -66,6 +70,7 @@ const SurveyDashboard = ({
   const [customEmploymentType, setCustomEmploymentType] = useState('');
   const [showCustomPlatform, setShowCustomPlatform] = useState(false);
   const [showCustomEmploymentType, setShowCustomEmploymentType] = useState(false);
+  const [interviewDate, setInterviewDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     const totalQuestions = SURVEY_QUESTIONS.length;
@@ -125,6 +130,23 @@ const SurveyDashboard = ({
       interviewCode: targetSession.interviewCode || ''
     });
     
+    // Parse and set interview date
+    if (targetSession.interviewDate) {
+      try {
+        // Try to parse the existing date format
+        const parsedDate = new Date(targetSession.interviewDate);
+        if (!isNaN(parsedDate.getTime())) {
+          setInterviewDate(parsedDate);
+        } else {
+          setInterviewDate(new Date());
+        }
+      } catch {
+        setInterviewDate(new Date());
+      }
+    } else {
+      setInterviewDate(new Date());
+    }
+    
     // Check if current values are custom (not in predefined options)
     const isCustomPlatform = targetSession.platformName && !PLATFORM_OPTIONS.includes(targetSession.platformName);
     const isCustomEmployment = targetSession.employmentType && !EMPLOYMENT_TYPE_OPTIONS.includes(targetSession.employmentType);
@@ -168,6 +190,7 @@ const SurveyDashboard = ({
     // Determine final values (use custom input if "Other" is selected)
     const finalPlatformName = showCustomPlatform ? customPlatform : editValues.platformName;
     const finalEmploymentType = showCustomEmploymentType ? customEmploymentType : editValues.employmentType;
+    const finalInterviewDate = interviewDate ? format(interviewDate, "dd MMM yyyy") : format(new Date(), "dd MMM yyyy");
     
     if (selectedInterview) {
       // Update the selected interview
@@ -176,6 +199,7 @@ const SurveyDashboard = ({
         platformName: finalPlatformName,
         employmentType: finalEmploymentType,
         interviewCode: editValues.interviewCode,
+        interviewDate: finalInterviewDate,
         lastUpdated: new Date()
       };
       
@@ -195,7 +219,8 @@ const SurveyDashboard = ({
         onUpdateSession({
           platformName: finalPlatformName,
           employmentType: finalEmploymentType,
-          interviewCode: editValues.interviewCode
+          interviewCode: editValues.interviewCode,
+          interviewDate: finalInterviewDate
         });
       }
     }
@@ -586,10 +611,37 @@ const SurveyDashboard = ({
                 </div>
               )}
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-500" />
+                <CalendarIcon className="h-4 w-4 text-blue-500" />
                 <div>
                   <label className="text-xs font-medium text-gray-500">Date</label>
-                  <p className="text-sm font-semibold">{selectedInterview.interviewDate}</p>
+                  {isEditing ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "text-xs h-7 justify-start font-normal mt-1",
+                            !interviewDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {interviewDate ? format(interviewDate, "dd MMM yyyy") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={interviewDate}
+                          onSelect={setInterviewDate}
+                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <p className="text-sm font-semibold">{selectedInterview.interviewDate}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -597,7 +649,7 @@ const SurveyDashboard = ({
             <Separator />
 
             {/* Session Information - Editable Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs font-medium text-gray-500">Platform</Label>
                 {isEditing ? (
@@ -679,7 +731,7 @@ const SurveyDashboard = ({
             </div>
             
             {/* Time Tracking Details - Read Only */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               <div>
                 <label className="text-xs font-medium text-gray-500">Started At</label>
                 <p className="text-xs">{selectedInterview.startTime.toLocaleString()}</p>
