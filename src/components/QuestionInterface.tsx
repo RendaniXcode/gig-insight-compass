@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -297,31 +298,33 @@ const QuestionInterface = ({
         </Button>
       </div>
 
-      {/* Category Navigation */}
-      <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
-        <Button
-          variant="outline"
-          onClick={navigateToPreviousCategory}
-          disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === 0}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Previous Category
-        </Button>
-        
-        <div className="text-sm font-medium text-gray-700">
-          {category.name}
+      {/* Category Navigation - Fixed for mobile */}
+      <div className="bg-white rounded-lg shadow-sm p-2">
+        <div className="grid grid-cols-3 gap-1 items-center">
+          <Button
+            variant="outline"
+            onClick={navigateToPreviousCategory}
+            disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === 0}
+            className="flex items-center justify-center gap-1 text-xs px-2 py-1 h-8"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            <span className="hidden xs:inline">Prev</span>
+          </Button>
+          
+          <div className="text-xs font-medium text-gray-700 text-center px-1 leading-tight">
+            {category.name}
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={navigateToNextCategory}
+            disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === SURVEY_CATEGORIES.length - 1}
+            className="flex items-center justify-center gap-1 text-xs px-2 py-1 h-8"
+          >
+            <span className="hidden xs:inline">Next</span>
+            <ArrowRight className="h-3 w-3" />
+          </Button>
         </div>
-        
-        <Button
-          variant="outline"
-          onClick={navigateToNextCategory}
-          disabled={SURVEY_CATEGORIES.findIndex(c => c.code === categoryCode) === SURVEY_CATEGORIES.length - 1}
-          className="flex items-center gap-2"
-        >
-          Next Category
-          <ArrowRight className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Progress */}
