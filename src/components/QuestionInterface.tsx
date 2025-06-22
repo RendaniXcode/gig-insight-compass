@@ -147,6 +147,40 @@ const QuestionInterface = ({
     return saveData;
   };
 
+  const simulateCategorySave = async () => {
+    // Simulate POST API call to backend for category completion
+    const saveData = {
+      categoryCode,
+      categoryName: category?.name,
+      totalQuestions: categoryQuestions.length,
+      completedResponses: responses.filter(r => 
+        categoryQuestions.some(q => q.id === r.questionId)
+      ),
+      completionStatus: 'completed',
+      timestamp: new Date().toISOString(),
+      sessionId: `session_${Date.now()}`
+    };
+
+    console.log('POST /api/save-category-completion', saveData);
+    console.log('Simulating category completion save...');
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    console.log('✅ Category completion saved successfully to backend');
+    return saveData;
+  };
+
+  const handleSaveAndNext = async () => {
+    try {
+      await simulateCategorySave();
+      onCategorySaveAndNext(categoryCode);
+      setShowSuccessDialog(true);
+    } catch (error) {
+      console.error('Failed to save category completion:', error);
+    }
+  };
+
   const handleSaveProgress = async () => {
     try {
       await simulateProgressSave();
