@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -218,9 +219,14 @@ const Index = () => {
       const nextCategory = SURVEY_CATEGORIES[currentIndex + 1];
       console.log("Moving to next category:", nextCategory);
       
+      // Ensure we properly set the category and view
       setSelectedCategory(nextCategory.code);
       setCurrentView('questions');
-      toast.info(`Moving to: ${nextCategory.name}`);
+      
+      // Force a small delay to ensure state updates properly
+      setTimeout(() => {
+        toast.info(`Moving to: ${nextCategory.name}`);
+      }, 100);
     } else {
       // All categories completed, go to dashboard
       console.log("All categories completed, going to dashboard");
