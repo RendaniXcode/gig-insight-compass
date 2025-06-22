@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -394,18 +393,18 @@ const QuestionInterface = ({
                     <span className="sm:hidden">Complete</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="w-[90vw] max-w-md mx-auto">
+                <AlertDialogContent className="w-[90vw] max-w-md mx-auto rounded-xl">
                   <AlertDialogHeader className="text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                       <CheckCircle className="h-6 w-6 text-green-600" />
                     </div>
                     <AlertDialogTitle className="text-lg">Category Completed!</AlertDialogTitle>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="flex flex-col gap-2 sm:flex-row">
-                    <AlertDialogCancel className="w-full sm:w-auto">Stay Here</AlertDialogCancel>
+                  <AlertDialogFooter className="flex justify-center gap-4 sm:gap-6">
+                    <AlertDialogCancel className="px-6 py-2 min-w-[100px]">Stay Here</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={handleSaveAndNext}
-                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                      className="px-6 py-2 min-w-[100px] bg-green-600 hover:bg-green-700"
                     >
                       Continue
                     </AlertDialogAction>
