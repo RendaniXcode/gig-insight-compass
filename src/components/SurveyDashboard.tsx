@@ -81,17 +81,28 @@ const SurveyDashboard = ({
   const getCategoryStats = () => {
     return SURVEY_CATEGORIES.map(category => {
       const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === category.code);
-      const answeredInCategory = session.responses.filter(r => 
-        categoryQuestions.some(q => q.id === r.questionId) && r.answer.trim() !== ""
-      ).length;
+      const categoryResponses = session.responses.filter(r => 
+        categoryQuestions.some(q => q.id === r.questionId)
+      );
+      
+      const answeredInCategory = categoryResponses.filter(r => r.answer.trim() !== "").length;
       
       // Check if category was skipped (all questions answered with "N/A")
-      const skippedInCategory = session.responses.filter(r => 
-        categoryQuestions.some(q => q.id === r.questionId) && r.answer.trim() === "N/A"
-      ).length;
+      const skippedInCategory = categoryResponses.filter(r => r.answer.trim() === "N/A").length;
+      const isSkipped = skippedInCategory === categoryQuestions.length && skippedInCategory > 0;
       
-      const isSkipped = skippedInCategory === categoryQuestions.length;
+      // Category is completed if all questions are answered OR if it's skipped
       const isCompleted = answeredInCategory === categoryQuestions.length || isSkipped;
+      
+      // Determine status for coloring
+      let status = 'not-answered';
+      if (isSkipped) {
+        status = 'skipped';
+      } else if (isCompleted) {
+        status = 'completed';
+      } else if (answeredInCategory > 0) {
+        status = 'partial';
+      }
       
       return {
         ...category,
@@ -99,7 +110,8 @@ const SurveyDashboard = ({
         answered: answeredInCategory,
         skipped: isSkipped,
         completion: (answeredInCategory / categoryQuestions.length) * 100,
-        isCompleted
+        isCompleted,
+        status
       };
     });
   };
@@ -239,70 +251,97 @@ const SurveyDashboard = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {getCategoryStats().map((category) => (
-              <Card 
-                key={category.code} 
-                className={`border-l-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${
-                  category.isCompleted ? 'bg-gray-50' : 'hover:bg-blue-50'
-                }`}
-                style={{ borderLeftColor: category.color.replace('bg-', '#') }}
-                onClick={() => handleCategoryClick(category.code)}
-              >
-                <CardContent className="pt-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-start">
-                      <span className="font-medium text-sm leading-tight pr-2">{category.name}</span>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {category.isCompleted && (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        )}
-                        {category.skipped && (
-                          <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
-                            Skipped
-                          </Badge>
+            {getCategoryStats().map((category) => {
+              // Determine card background and border color based on status
+              let cardClasses = "border-l-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ";
+              let borderColor = category.color.replace('bg-', '#');
+              
+              switch (category.status) {
+                case 'completed':
+                  cardClasses += "bg-green-50 border-green-500";
+                  borderColor = '#22c55e';
+                  break;
+                case 'skipped':
+                  cardClasses += "bg-gray-100 border-gray-400";
+                  borderColor = '#9ca3af';
+                  break;
+                case 'partial':
+                  cardClasses += "bg-yellow-50 border-yellow-500";
+                  borderColor = '#eab308';
+                  break;
+                default:
+                  cardClasses += "bg-white border-gray-300 hover:bg-blue-50";
+                  borderColor = '#d1d5db';
+              }
+              
+              return (
+                <Card 
+                  key={category.code} 
+                  className={cardClasses}
+                  style={{ borderLeftColor: borderColor }}
+                  onClick={() => handleCategoryClick(category.code)}
+                >
+                  <CardContent className="pt-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <span className="font-medium text-sm leading-tight pr-2">{category.name}</span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {category.isCompleted && !category.skipped && (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                          {category.skipped && (
+                            <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700">
+                              Skipped
+                            </Badge>
+                          )}
+                          {category.status === 'partial' && (
+                            <Badge variant="secondary" className="text-xs bg-yellow-200 text-yellow-800">
+                              Partial
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>
+                          {category.skipped ? 'N/A' : `${category.answered} / ${category.total}`}
+                        </span>
+                        <span>
+                          {category.skipped ? 'Skipped' : `${category.completion.toFixed(0)}%`}
+                        </span>
+                      </div>
+                      
+                      {!category.skipped && (
+                        <Progress value={category.completion} className="h-2" />
+                      )}
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs h-7"
+                          onClick={() => handleCategoryClick(category.code)}
+                        >
+                          {category.isCompleted ? 'Review' : 'Start'}
+                        </Button>
+                        
+                        {!category.isCompleted && !category.skipped && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="flex items-center gap-1 text-xs h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                            onClick={(e) => handleSkipCategory(category.code, e)}
+                          >
+                            <SkipForward className="h-3 w-3" />
+                            Skip
+                          </Button>
                         )}
                       </div>
                     </div>
-                    
-                    <div className="flex justify-between text-xs text-gray-600">
-                      <span>
-                        {category.skipped ? 'N/A' : `${category.answered} / ${category.total}`}
-                      </span>
-                      <span>
-                        {category.skipped ? 'Skipped' : `${category.completion.toFixed(0)}%`}
-                      </span>
-                    </div>
-                    
-                    {!category.skipped && (
-                      <Progress value={category.completion} className="h-2" />
-                    )}
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 text-xs h-7"
-                        onClick={() => handleCategoryClick(category.code)}
-                      >
-                        {category.isCompleted ? 'Review' : 'Start'}
-                      </Button>
-                      
-                      {!category.isCompleted && !category.skipped && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="flex items-center gap-1 text-xs h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                          onClick={(e) => handleSkipCategory(category.code, e)}
-                        >
-                          <SkipForward className="h-3 w-3" />
-                          Skip
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

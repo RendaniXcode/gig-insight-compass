@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,7 +126,19 @@ const QuestionInterface = ({
     return currentIndex === SURVEY_CATEGORIES.length - 1;
   };
 
+  const isCategorySkipped = () => {
+    const categoryResponses = responses.filter(r => 
+      categoryQuestions.some(q => q.id === r.questionId)
+    );
+    return categoryResponses.length > 0 && categoryResponses.every(r => r.answer === "N/A");
+  };
+
   const getQuestionStatus = (questionId: string) => {
+    // If the entire category is skipped, all questions should show as skipped
+    if (isCategorySkipped()) {
+      return "skipped";
+    }
+    
     const response = responses.find(r => r.questionId === questionId);
     if (!response || response.answer.trim() === "") {
       return "unanswered";
@@ -388,10 +399,10 @@ const QuestionInterface = ({
                 buttonClasses += "bg-green-500 hover:bg-green-600 text-white border-green-500";
               } else if (status === "skipped") {
                 variant = "ghost";
-                buttonClasses += "bg-gray-300 hover:bg-gray-400 text-gray-600 border-gray-300";
+                buttonClasses += "bg-gray-400 hover:bg-gray-500 text-white border-gray-400";
               } else {
                 variant = "outline";
-                buttonClasses += "bg-white hover:bg-gray-50";
+                buttonClasses += "bg-white hover:bg-gray-50 border-gray-300";
               }
               
               return (
