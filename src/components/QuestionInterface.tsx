@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,10 +65,12 @@ const QuestionInterface = ({
   const currentQuestion = categoryQuestions[currentQuestionIndex];
   const category = SURVEY_CATEGORIES.find(c => c.code === categoryCode);
 
-  // Update question index when initialQuestionIndex changes
+  // Update question index when initialQuestionIndex changes, but only if it's valid
   useEffect(() => {
-    setCurrentQuestionIndex(initialQuestionIndex);
-  }, [initialQuestionIndex]);
+    if (initialQuestionIndex >= 0 && initialQuestionIndex < categoryQuestions.length) {
+      setCurrentQuestionIndex(initialQuestionIndex);
+    }
+  }, [initialQuestionIndex, categoryQuestions.length]);
 
   // Load existing response when question changes
   useEffect(() => {
