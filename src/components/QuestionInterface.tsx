@@ -58,6 +58,15 @@ const QuestionInterface = ({
     '18-24', '25-34', '35-44', '45-54', '55-64', '65+', 'Other'
   ];
 
+  const getExperienceYearOptions = () => {
+    const years = [];
+    for (let i = 1; i <= 18; i++) {
+      years.push(`${i} year${i === 1 ? '' : 's'}`);
+    }
+    years.push('Other');
+    return years;
+  };
+
   // Reset to question 1 when category changes
   useEffect(() => {
     setCurrentQuestionIndex(0);
@@ -68,7 +77,7 @@ const QuestionInterface = ({
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
       const response = existingResponse?.answer || "";
       
-      // Handle special cases for Platform Name and Age
+      // Handle special cases for Platform Name, Age, and Experience
       if (currentQuestion.id === 'BI_01') {
         // Platform Name - check if it's a custom response
         const platformOptions = getPlatformOptions();
@@ -83,6 +92,16 @@ const QuestionInterface = ({
         // Age - check if it's a custom response
         const ageOptions = getAgeRangeOptions();
         if (response && !ageOptions.includes(response)) {
+          setCurrentAnswer('Other');
+          setCustomInput(response);
+        } else {
+          setCurrentAnswer(response);
+          setCustomInput("");
+        }
+      } else if (currentQuestion.id === 'PI_01') {
+        // Experience years - check if it's a custom response
+        const experienceOptions = getExperienceYearOptions();
+        if (response && !experienceOptions.includes(response)) {
           setCurrentAnswer('Other');
           setCustomInput(response);
         } else {
@@ -280,7 +299,7 @@ const QuestionInterface = ({
       );
     }
 
-    // Handle special cases for Platform Name and Age
+    // Handle special cases for Platform Name, Age, and Experience
     if (currentQuestion.id === 'BI_01') {
       // Platform Name dropdown
       return (
@@ -331,6 +350,35 @@ const QuestionInterface = ({
             <Input
               type="number"
               placeholder="Please enter your age..."
+              value={customInput}
+              onChange={(e) => handleCustomInputChange(e.target.value)}
+              className="text-base md:text-lg"
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (currentQuestion.id === 'PI_01') {
+      // Experience years dropdown
+      return (
+        <div className="space-y-4">
+          <Select value={currentAnswer} onValueChange={handleAnswerChange}>
+            <SelectTrigger className="text-base md:text-lg">
+              <SelectValue placeholder="Select years of experience..." />
+            </SelectTrigger>
+            <SelectContent className="bg-white border shadow-lg z-50">
+              {getExperienceYearOptions().map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {currentAnswer === 'Other' && (
+            <Input
+              placeholder="Please specify (e.g., 6 months, 2 years 3 months)..."
               value={customInput}
               onChange={(e) => handleCustomInputChange(e.target.value)}
               className="text-base md:text-lg"
