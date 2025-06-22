@@ -61,6 +61,11 @@ const Index = () => {
     localStorage.setItem(`interview_session_${session.id}`, JSON.stringify(session));
   }, [session]);
 
+  const handleGoToDashboard = () => {
+    setCurrentView('dashboard');
+    toast.info("Viewing existing interviews");
+  };
+
   const handleLoadInterview = (sessionId: string) => {
     const savedSession = localStorage.getItem(`interview_session_${sessionId}`);
     if (savedSession) {
