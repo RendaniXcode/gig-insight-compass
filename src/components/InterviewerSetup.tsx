@@ -48,6 +48,15 @@ const InterviewerSetup = ({ onSetup, onGoToDashboard }: InterviewerSetupProps) =
     return interviewer.length > 0;
   };
 
+  const handleViewExistingInterviews = () => {
+    console.log("View Existing Interviews clicked");
+    if (onGoToDashboard) {
+      onGoToDashboard();
+    } else {
+      console.warn("onGoToDashboard prop not provided");
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto px-4 py-4">
       <Card className="w-full">
@@ -110,17 +119,15 @@ const InterviewerSetup = ({ onSetup, onGoToDashboard }: InterviewerSetupProps) =
                 Start Interview Session
               </Button>
               
-              {onGoToDashboard && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full flex items-center gap-2" 
-                  onClick={onGoToDashboard}
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  View Existing Interviews
-                </Button>
-              )}
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full flex items-center gap-2" 
+                onClick={handleViewExistingInterviews}
+              >
+                <BarChart3 className="h-4 w-4" />
+                View Existing Interviews
+              </Button>
             </div>
           </form>
         </CardContent>
