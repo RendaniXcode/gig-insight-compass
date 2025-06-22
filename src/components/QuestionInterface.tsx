@@ -78,18 +78,25 @@ const QuestionInterface = ({
   useEffect(() => {
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
-      const answer = existingResponse?.answer || '';
       
-      // Check if it's an "Other:" response for multiple choice
-      if (answer.startsWith('Other: ')) {
-        setCurrentAnswer('Other');
-        setOtherText(answer.substring(7)); // Remove "Other: " prefix
+      if (existingResponse && existingResponse.answer) {
+        const answer = existingResponse.answer;
+        
+        // Check if it's an "Other:" response for multiple choice
+        if (answer.startsWith('Other: ')) {
+          setCurrentAnswer('Other');
+          setOtherText(answer.substring(7)); // Remove "Other: " prefix
+        } else {
+          setCurrentAnswer(answer);
+          setOtherText('');
+        }
       } else {
-        setCurrentAnswer(answer);
+        // Reset states when no existing response or empty answer
+        setCurrentAnswer('');
         setOtherText('');
       }
     }
-  }, [currentQuestion, responses]);
+  }, [currentQuestion?.id, responses]); // Changed dependency to currentQuestion?.id to ensure it runs when question changes
 
   // Auto-save response when answer changes
   useEffect(() => {
