@@ -67,7 +67,7 @@ describe('Question Validation', () => {
         category: 'Test Category',
         categoryCode: 'TEST',
         type: 'invalid_type'
-      } as Question;
+      } as unknown as Question;
 
       const result = validateQuestion(question);
       expect(result.isValid).toBe(false);
