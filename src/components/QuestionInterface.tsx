@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -393,20 +394,20 @@ const QuestionInterface = ({
                     <span className="sm:hidden">Complete</span>
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Complete Category</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      You've reached the end of this category. Would you like to save your progress and move to the next category?
-                    </AlertDialogDescription>
+                <AlertDialogContent className="w-[90vw] max-w-md mx-auto">
+                  <AlertDialogHeader className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <AlertDialogTitle className="text-lg">Category Completed!</AlertDialogTitle>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Stay Here</AlertDialogCancel>
+                  <AlertDialogFooter className="flex flex-col gap-2 sm:flex-row">
+                    <AlertDialogCancel className="w-full sm:w-auto">Stay Here</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={handleSaveAndNext}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
                     >
-                      Continue to Next Category
+                      Continue
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
