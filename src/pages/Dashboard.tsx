@@ -53,7 +53,8 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
             completedCategories: [],
             platformName: "",
             employmentType: "",
-            interviewCode: ""
+            interviewCode: "",
+            currentQuestionIndex: 0
           };
           setCurrentSession(defaultSession);
         }
@@ -72,7 +73,8 @@ export const Dashboard = ({ onGoToLanding }: DashboardProps) => {
           completedCategories: [],
           platformName: "",
           employmentType: "",
-          interviewCode: ""
+          interviewCode: "",
+          currentQuestionIndex: 0
         };
         setCurrentSession(fallbackSession);
       } finally {
