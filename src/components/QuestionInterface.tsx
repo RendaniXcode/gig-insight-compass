@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle, SkipForward } from "lucide-react";
 import { Question, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -81,6 +82,14 @@ const QuestionInterface = ({
     }
   };
 
+  const handleSkipQuestion = () => {
+    if (currentQuestion) {
+      onResponseChange(currentQuestion.id, "SKIPPED");
+      setCurrentAnswer("SKIPPED");
+      setCustomInput("");
+    }
+  };
+
   const handleNext = () => {
     if (currentQuestionIndex < categoryQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -118,7 +127,37 @@ const QuestionInterface = ({
     return currentIndex === SURVEY_CATEGORIES.length - 1;
   };
 
+  const getQuestionStatus = (questionId: string) => {
+    const response = responses.find(r => r.questionId === questionId);
+    if (!response || response.answer.trim() === "") {
+      return "unanswered";
+    }
+    if (response.answer === "SKIPPED") {
+      return "skipped";
+    }
+    return "answered";
+  };
+
   const renderQuestionInput = () => {
+    // Don't render input if question is skipped
+    if (currentAnswer === "SKIPPED") {
+      return (
+        <div className="text-center py-8">
+          <div className="text-gray-500 text-lg mb-4">This question has been skipped</div>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setCurrentAnswer("");
+              onResponseChange(currentQuestion.id, "");
+            }}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            Answer This Question
+          </Button>
+        </div>
+      );
+    }
+
     const questionType = currentQuestion.type || 'textarea';
     
     switch (questionType) {
@@ -248,6 +287,20 @@ const QuestionInterface = ({
         <CardContent className="space-y-6">
           {renderQuestionInput()}
 
+          {/* Skip Button */}
+          {currentAnswer !== "SKIPPED" && (
+            <div className="flex justify-center">
+              <Button
+                variant="ghost"
+                onClick={handleSkipQuestion}
+                className="flex items-center gap-2 text-gray-500 hover:text-gray-700"
+              >
+                <SkipForward className="h-4 w-4" />
+                Skip This Question
+              </Button>
+            </div>
+          )}
+
           {/* Navigation */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4">
             <Button
@@ -277,11 +330,10 @@ const QuestionInterface = ({
                 <AlertDialogTrigger asChild>
                   <Button
                     onClick={handleSaveAndNext}
-                    disabled={!hasAnsweredCurrentQuestion}
-                    className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+                    className="flex items-center gap-2 w-full sm:w-auto bg-green-600 hover:bg-green-700"
                   >
                     <Database className="h-4 w-4" />
-                    {hasAnsweredCurrentQuestion ? "Save & Complete Category" : "Answer Question to Continue"}
+                    Save & Complete Category
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="sm:max-w-md text-center">
@@ -322,16 +374,33 @@ const QuestionInterface = ({
         <CardContent>
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
             {categoryQuestions.map((question, index) => {
-              const hasResponse = responses.some(r => r.questionId === question.id && r.answer.trim() !== "");
+              const status = getQuestionStatus(question.id);
               const isCurrent = index === currentQuestionIndex;
+              
+              let buttonClasses = "h-10 text-xs md:text-sm ";
+              let variant: "default" | "secondary" | "outline" | "ghost" = "outline";
+              
+              if (isCurrent) {
+                variant = "default";
+                buttonClasses += "ring-2 ring-blue-500";
+              } else if (status === "answered") {
+                variant = "secondary";
+                buttonClasses += "bg-green-500 hover:bg-green-600 text-white border-green-500";
+              } else if (status === "skipped") {
+                variant = "ghost";
+                buttonClasses += "bg-gray-300 hover:bg-gray-400 text-gray-600 border-gray-300";
+              } else {
+                variant = "outline";
+                buttonClasses += "bg-white hover:bg-gray-50";
+              }
               
               return (
                 <Button
                   key={question.id}
-                  variant={isCurrent ? "default" : hasResponse ? "secondary" : "outline"}
+                  variant={variant}
                   size="sm"
                   onClick={() => setCurrentQuestionIndex(index)}
-                  className={`h-10 text-xs md:text-sm ${isCurrent ? 'ring-2 ring-blue-500' : ''}`}
+                  className={buttonClasses}
                 >
                   {index + 1}
                 </Button>
