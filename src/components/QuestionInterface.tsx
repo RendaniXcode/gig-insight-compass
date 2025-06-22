@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, 
@@ -59,6 +60,7 @@ const QuestionInterface = ({
 }: QuestionInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialQuestionIndex);
   const [currentAnswer, setCurrentAnswer] = useState('');
+  const [otherText, setOtherText] = useState('');
 
   // Get questions for the current category
   const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
@@ -76,17 +78,33 @@ const QuestionInterface = ({
   useEffect(() => {
     if (currentQuestion) {
       const existingResponse = responses.find(r => r.questionId === currentQuestion.id);
-      setCurrentAnswer(existingResponse?.answer || '');
+      const answer = existingResponse?.answer || '';
+      
+      // Check if it's an "Other:" response for multiple choice
+      if (answer.startsWith('Other: ')) {
+        setCurrentAnswer('Other');
+        setOtherText(answer.substring(7)); // Remove "Other: " prefix
+      } else {
+        setCurrentAnswer(answer);
+        setOtherText('');
+      }
     }
   }, [currentQuestion, responses]);
 
   // Auto-save response when answer changes
   useEffect(() => {
     if (currentQuestion && currentAnswer !== '') {
-      onResponseChange(currentQuestion.id, currentAnswer);
+      let finalAnswer = currentAnswer;
+      
+      // If "Other" is selected and there's text, combine them
+      if (currentAnswer === 'Other' && otherText.trim()) {
+        finalAnswer = `Other: ${otherText.trim()}`;
+      }
+      
+      onResponseChange(currentQuestion.id, finalAnswer);
       onSave();
     }
-  }, [currentAnswer, currentQuestion, onResponseChange, onSave]);
+  }, [currentAnswer, otherText, currentQuestion, onResponseChange, onSave]);
 
   const handleNext = () => {
     if (currentQuestionIndex < categoryQuestions.length - 1) {
@@ -192,8 +210,8 @@ const QuestionInterface = ({
 
       case 'multiple_choice':
         return (
-          <div className="space-y-2">
-            <Select value={currentAnswer} onValueChange={setCurrentAnswer}>
+          <div className="space-y-4">
+            <Select value={currentAnswer === 'Other' ? '' : currentAnswer} onValueChange={setCurrentAnswer}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an option..." />
               </SelectTrigger>
@@ -203,8 +221,24 @@ const QuestionInterface = ({
                     {option}
                   </SelectItem>
                 ))}
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
+            
+            {currentAnswer === 'Other' && (
+              <div className="space-y-2">
+                <Label htmlFor="other-input" className="text-sm font-medium">
+                  Please specify:
+                </Label>
+                <Input
+                  id="other-input"
+                  value={otherText}
+                  onChange={(e) => setOtherText(e.target.value)}
+                  placeholder="Enter your answer..."
+                  className="w-full"
+                />
+              </div>
+            )}
           </div>
         );
 
@@ -223,16 +257,21 @@ const QuestionInterface = ({
 
       case 'yes_no':
         return (
-          <div className="space-y-2">
-            <Select value={currentAnswer} onValueChange={setCurrentAnswer}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose Yes or No..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Yes">Yes</SelectItem>
-                <SelectItem value="No">No</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-3">
+            <RadioGroup value={currentAnswer} onValueChange={setCurrentAnswer}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="Yes" id="yes" />
+                <Label htmlFor="yes" className="text-sm font-medium cursor-pointer">
+                  Yes
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="No" id="no" />
+                <Label htmlFor="no" className="text-sm font-medium cursor-pointer">
+                  No
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         );
 
