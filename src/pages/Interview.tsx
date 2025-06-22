@@ -101,31 +101,31 @@ export const Interview = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 md:p-6">
+    <div className="min-h-screen bg-gray-50 p-2 md:p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Mobile-optimized header */}
-        <div className="flex flex-col space-y-3 mb-4 md:mb-6">
-          {/* Title - centered on mobile */}
-          <div className="text-center md:text-left">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Interview Session</h1>
+        {/* Mobile-optimized header with increased top spacing */}
+        <div className="pt-4 pb-2 space-y-2">
+          {/* Title - centered on mobile with 5% spacing from top */}
+          <div className="text-center">
+            <h1 className="text-lg md:text-2xl font-bold text-gray-900">Interview Session</h1>
           </div>
           
-          {/* Navigation buttons - centered on mobile, right-aligned on desktop */}
-          <div className="flex justify-center md:justify-end">
-            <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" onClick={onGoToDashboard} className="flex items-center gap-2 text-xs md:text-sm h-8 md:h-10">
-                <BarChart3 className="h-3 w-3 md:h-4 md:w-4" />
+          {/* Navigation buttons - centered and compact on mobile */}
+          <div className="flex justify-center">
+            <div className="flex gap-1.5">
+              <Button variant="outline" onClick={onGoToDashboard} className="flex items-center gap-1.5 text-xs h-8 px-3">
+                <BarChart3 className="h-3 w-3" />
                 Dashboard
               </Button>
               {onGoToSetup && (
-                <Button variant="outline" onClick={onGoToSetup} className="flex items-center gap-2 text-xs md:text-sm h-8 md:h-10">
-                  <Settings className="h-3 w-3 md:h-4 md:w-4" />
+                <Button variant="outline" onClick={onGoToSetup} className="flex items-center gap-1.5 text-xs h-8 px-3">
+                  <Settings className="h-3 w-3" />
                   Setup
                 </Button>
               )}
               {onGoToLanding && (
-                <Button variant="outline" onClick={onGoToLanding} className="flex items-center gap-2 text-xs md:text-sm h-8 md:h-10">
-                  <Home className="h-3 w-3 md:h-4 md:w-4" />
+                <Button variant="outline" onClick={onGoToLanding} className="flex items-center gap-1.5 text-xs h-8 px-3">
+                  <Home className="h-3 w-3" />
                   Home
                 </Button>
               )}
