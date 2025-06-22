@@ -7,8 +7,9 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle, SkipForward } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, ArrowRight, Save, Home, Database, CheckCircle, SkipForward, LogOut, Play } from "lucide-react";
 import { Question, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -40,6 +41,7 @@ const QuestionInterface = ({
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [customInput, setCustomInput] = useState("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
 
   const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
   const currentQuestion = categoryQuestions[currentQuestionIndex];
@@ -120,6 +122,20 @@ const QuestionInterface = ({
     if (onMoveToNextCategory) {
       onMoveToNextCategory(categoryCode);
     }
+  };
+
+  const handleSaveProgress = () => {
+    onSave();
+    setShowSaveDialog(true);
+  };
+
+  const handleExitInterview = () => {
+    setShowSaveDialog(false);
+    onBack();
+  };
+
+  const handleContinueInterview = () => {
+    setShowSaveDialog(false);
   };
 
   const getNextCategoryName = () => {
@@ -291,11 +307,43 @@ const QuestionInterface = ({
           <span className="hidden sm:inline">Back to Categories</span>
           <span className="sm:hidden">Back</span>
         </Button>
-        <Button onClick={onSave} className="flex items-center gap-2 self-start sm:self-auto text-xs h-8 px-2">
+        <Button onClick={handleSaveProgress} className="flex items-center gap-2 self-start sm:self-auto text-xs h-8 px-2">
           <Save className="h-3 w-3" />
           Save Progress
         </Button>
       </div>
+
+      {/* Save Progress Dialog */}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Progress Saved Successfully!
+            </DialogTitle>
+            <DialogDescription>
+              Your progress has been saved. What would you like to do next?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              onClick={handleExitInterview}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <LogOut className="h-4 w-4" />
+              Exit & Continue Later
+            </Button>
+            <Button
+              onClick={handleContinueInterview}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              <Play className="h-4 w-4" />
+              Continue Interview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Category Navigation - Fixed for mobile */}
       <div className="bg-white rounded-lg shadow-sm p-2">
