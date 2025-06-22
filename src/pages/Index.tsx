@@ -62,6 +62,7 @@ const Index = () => {
   }, [session]);
 
   const handleGoToDashboard = () => {
+    console.log("handleGoToDashboard called - navigating to dashboard");
     setCurrentView('dashboard');
     toast.info("Viewing existing interviews");
   };
@@ -426,8 +427,8 @@ const Index = () => {
     toast.success("Interview details updated successfully!");
   };
 
-  // Show setup if no interviewer is set
-  if (currentView === 'setup' || !session.interviewer) {
+  // Show setup if no interviewer is set OR if currentView is explicitly 'setup'
+  if (currentView === 'setup' || (!session.interviewer && currentView !== 'dashboard')) {
     return (
       <div className="min-h-screen bg-gray-50 p-2">
         <InterviewerSetup 
