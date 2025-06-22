@@ -442,9 +442,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-2">
-      {/* Mobile-First Navigation with top margin */}
-      <div className="w-full mb-4 mt-[12vh]">
-        <div className="flex flex-col gap-2">
+      {/* Mobile-First Navigation with adjusted top margin */}
+      <div className="w-full mb-6 mt-[2vh]">
+        <div className="flex flex-col gap-4">
           <div className="flex gap-1 w-full">
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -496,8 +496,23 @@ const Index = () => {
           </div>
           
           {session.responses.length > 0 && (
-            <div className="text-xs text-gray-600 text-center">
-              Progress: {Math.round((session.responses.filter(r => r.answer.trim()).length / SURVEY_QUESTIONS.length) * 100)}%
+            <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-gray-600">Progress</span>
+                <span className="text-xs font-semibold text-gray-800">
+                  {Math.round((session.responses.filter(r => r.answer.trim()).length / SURVEY_QUESTIONS.length) * 100)}%
+                </span>
+              </div>
+              <div className="mt-1">
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className="bg-blue-500 h-1.5 rounded-full transition-all duration-300 ease-out"
+                    style={{ 
+                      width: `${Math.round((session.responses.filter(r => r.answer.trim()).length / SURVEY_QUESTIONS.length) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
             </div>
           )}
         </div>
