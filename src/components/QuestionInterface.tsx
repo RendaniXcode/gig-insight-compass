@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +61,8 @@ const QuestionInterface = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initialQuestionIndex);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [otherText, setOtherText] = useState('');
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Get questions for the current category
   const categoryQuestions = SURVEY_QUESTIONS.filter(q => q.categoryCode === categoryCode);
@@ -75,10 +76,11 @@ const QuestionInterface = ({
     }
   }, [initialQuestionIndex, categoryQuestions.length]);
 
-  // Load existing response when question changes - this is the key fix
+  // Load existing response when question changes
   useEffect(() => {
     console.log('Question changed, loading response for:', currentQuestion?.id);
     
+    setIsLoadingResponse(true);
     // Always reset states first to prevent carryover
     setCurrentAnswer('');
     setOtherText('');
@@ -100,11 +102,27 @@ const QuestionInterface = ({
         }
       }
     }
-  }, [currentQuestion?.id]); // Only depend on question ID to ensure it runs when question changes
+    
+    // Add small delay to ensure state is properly set before allowing saves
+    setTimeout(() => {
+      setIsLoadingResponse(false);
+    }, 100);
+  }, [currentQuestion?.id]); // Only depend on question ID
 
-  // Auto-save response when answer changes
+  // Debounced auto-save response when answer changes (but not when loading)
   useEffect(() => {
-    if (currentQuestion && currentAnswer !== '') {
+    // Don't auto-save if we're loading an existing response or if answer is empty
+    if (isLoadingResponse || !currentQuestion || currentAnswer === '') {
+      return;
+    }
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set a new timeout for debounced saving
+    saveTimeoutRef.current = setTimeout(() => {
       let finalAnswer = currentAnswer;
       
       // If "Other" is selected and there's text, combine them
@@ -115,8 +133,24 @@ const QuestionInterface = ({
       console.log('Auto-saving response:', finalAnswer, 'for question:', currentQuestion.id);
       onResponseChange(currentQuestion.id, finalAnswer);
       onSave();
-    }
-  }, [currentAnswer, otherText, currentQuestion, onResponseChange, onSave]);
+    }, 500); // 500ms debounce
+
+    // Cleanup timeout on unmount or dependency change
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [currentAnswer, otherText, currentQuestion, onResponseChange, onSave, isLoadingResponse]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleNext = () => {
     if (currentQuestionIndex < categoryQuestions.length - 1) {
