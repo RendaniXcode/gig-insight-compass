@@ -33,15 +33,15 @@ const EMPLOYMENT_TYPE_OPTIONS = [
   "Other"
 ];
 
-const SurveyDashboardProps = {
-  session: InterviewSession,
-  onExport: () => void,
-  onContinueInterview?: () => void,
-  onCategorySelect?: (categoryCode: string) => void,
-  onSkipCategory?: (categoryCode: string) => void,
-  onLoadInterview?: (sessionId: string) => void,
-  onUpdateSession?: (updates: Partial<InterviewSession>) => void
-};
+interface SurveyDashboardProps {
+  session: InterviewSession;
+  onExport: () => void;
+  onContinueInterview?: () => void;
+  onCategorySelect?: (categoryCode: string) => void;
+  onSkipCategory?: (categoryCode: string) => void;
+  onLoadInterview?: (sessionId: string) => void;
+  onUpdateSession?: (updates: Partial<InterviewSession>) => void;
+}
 
 const SurveyDashboard = ({ 
   session, 
