@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import CategorySelector from "../components/CategorySelector";
@@ -412,6 +411,16 @@ const Index = () => {
     toast.success(`${categoryName} category skipped - marked as N/A`);
   };
 
+  const handleUpdateSession = (updates: Partial<InterviewSession>) => {
+    setSession(prev => ({
+      ...prev,
+      ...updates,
+      lastUpdated: new Date()
+    }));
+    
+    toast.success("Interview details updated successfully!");
+  };
+
   // Show setup if no interviewer is set
   if (currentView === 'setup' || !session.interviewer) {
     return (
@@ -539,6 +548,7 @@ const Index = () => {
             onCategorySelect={handleDashboardCategorySelect}
             onSkipCategory={handleSkipCategory}
             onLoadInterview={handleLoadInterview}
+            onUpdateSession={handleUpdateSession}
           />
         )}
       </div>

@@ -1,11 +1,11 @@
-
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward, List } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward, List, Edit2, Save, X } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
@@ -20,6 +20,7 @@ interface SurveyDashboardProps {
   onCategorySelect?: (categoryCode: string) => void;
   onSkipCategory?: (categoryCode: string) => void;
   onLoadInterview?: (sessionId: string) => void;
+  onUpdateSession?: (updates: Partial<InterviewSession>) => void;
 }
 
 const SurveyDashboard = ({ 
@@ -28,7 +29,8 @@ const SurveyDashboard = ({
   onContinueInterview, 
   onCategorySelect,
   onSkipCategory,
-  onLoadInterview
+  onLoadInterview,
+  onUpdateSession
 }: SurveyDashboardProps) => {
   const [stats, setStats] = useState({
     totalQuestions: 0,
@@ -38,6 +40,12 @@ const SurveyDashboard = ({
   });
   const [allInterviews, setAllInterviews] = useState<InterviewSession[]>([]);
   const [selectedInterview, setSelectedInterview] = useState<InterviewSession | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValues, setEditValues] = useState({
+    platformName: '',
+    employmentType: '',
+    interviewCode: ''
+  });
 
   useEffect(() => {
     const totalQuestions = SURVEY_QUESTIONS.length;
@@ -87,6 +95,65 @@ const SurveyDashboard = ({
 
     loadAllInterviews();
   }, [session.lastUpdated]);
+
+  // Initialize edit values when selectedInterview changes
+  useEffect(() => {
+    const targetSession = selectedInterview || session;
+    setEditValues({
+      platformName: targetSession.platformName || '',
+      employmentType: targetSession.employmentType || '',
+      interviewCode: targetSession.interviewCode || ''
+    });
+  }, [selectedInterview, session]);
+
+  const handleStartEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    const targetSession = selectedInterview || session;
+    setEditValues({
+      platformName: targetSession.platformName || '',
+      employmentType: targetSession.employmentType || '',
+      interviewCode: targetSession.interviewCode || ''
+    });
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = () => {
+    if (selectedInterview) {
+      // Update the selected interview
+      const updatedInterview = {
+        ...selectedInterview,
+        platformName: editValues.platformName,
+        employmentType: editValues.employmentType,
+        interviewCode: editValues.interviewCode,
+        lastUpdated: new Date()
+      };
+      
+      // Save to localStorage
+      localStorage.setItem(`interview_session_${selectedInterview.id}`, JSON.stringify(updatedInterview));
+      
+      // Update the selected interview state
+      setSelectedInterview(updatedInterview);
+      
+      // Update the interviews list
+      setAllInterviews(prev => prev.map(interview => 
+        interview.id === selectedInterview.id ? updatedInterview : interview
+      ));
+    } else {
+      // Update the current session
+      if (onUpdateSession) {
+        onUpdateSession({
+          platformName: editValues.platformName,
+          employmentType: editValues.employmentType,
+          interviewCode: editValues.interviewCode
+        });
+      }
+    }
+    
+    setIsEditing(false);
+  };
 
   const formatDuration = (startTime: Date, endTime?: Date) => {
     const end = endTime || new Date();
@@ -235,6 +302,9 @@ const SurveyDashboard = ({
       // Select the new interview for viewing details only
       setSelectedInterview(interview);
     }
+    
+    // Reset editing state when switching interviews
+    setIsEditing(false);
     
     // Don't automatically load/navigate - just show the details
     // Users can click the "Continue" button if they want to actually load it
@@ -388,7 +458,41 @@ const SurveyDashboard = ({
                 <FileText className="h-5 w-5" />
                 Current Interview Status
               </CardTitle>
-              {getSelectedStatusBadge()}
+              <div className="flex items-center gap-2">
+                {getSelectedStatusBadge()}
+                {!isEditing ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleStartEdit}
+                    className="flex items-center gap-1"
+                  >
+                    <Edit2 className="h-3 w-3" />
+                    Edit
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveEdit}
+                      className="flex items-center gap-1 text-green-600 border-green-500 hover:bg-green-50"
+                    >
+                      <Save className="h-3 w-3" />
+                      Save
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCancelEdit}
+                      className="flex items-center gap-1 text-red-600 border-red-500 hover:bg-red-50"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -421,30 +525,57 @@ const SurveyDashboard = ({
 
             <Separator />
 
-            {/* Session Information */}
+            {/* Session Information - Editable Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Platform</label>
-                <p className="text-lg font-semibold">{selectedInterview.platformName || "Not specified"}</p>
+                <Label className="text-sm font-medium text-gray-500">Platform</Label>
+                {isEditing ? (
+                  <Input
+                    value={editValues.platformName}
+                    onChange={(e) => setEditValues(prev => ({ ...prev, platformName: e.target.value }))}
+                    placeholder="Enter platform name"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="text-lg font-semibold mt-1">{selectedInterview.platformName || "Not specified"}</p>
+                )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Employment Type</label>
-                <p className="text-lg font-semibold">{selectedInterview.employmentType || "Not specified"}</p>
+                <Label className="text-sm font-medium text-gray-500">Employment Type</Label>
+                {isEditing ? (
+                  <Input
+                    value={editValues.employmentType}
+                    onChange={(e) => setEditValues(prev => ({ ...prev, employmentType: e.target.value }))}
+                    placeholder="Enter employment type"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="text-lg font-semibold mt-1">{selectedInterview.employmentType || "Not specified"}</p>
+                )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Interview Code</label>
-                <p className="text-lg font-semibold">{selectedInterview.interviewCode || selectedInterview.id}</p>
+                <Label className="text-sm font-medium text-gray-500">Interview Code</Label>
+                {isEditing ? (
+                  <Input
+                    value={editValues.interviewCode}
+                    onChange={(e) => setEditValues(prev => ({ ...prev, interviewCode: e.target.value }))}
+                    placeholder="Enter interview code"
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="text-lg font-semibold mt-1">{selectedInterview.interviewCode || selectedInterview.id}</p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Duration</label>
-                <p className="text-lg font-semibold flex items-center gap-1">
+                <p className="text-lg font-semibold flex items-center gap-1 mt-1">
                   <Clock className="h-4 w-4" />
                   {formatDuration(selectedInterview.startTime, selectedInterview.endTime)}
                 </p>
               </div>
             </div>
             
-            {/* Time Tracking Details */}
+            {/* Time Tracking Details - Read Only */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
                 <label className="text-sm font-medium text-gray-500">Started At</label>
@@ -622,4 +753,3 @@ const SurveyDashboard = ({
 };
 
 export default SurveyDashboard;
-
