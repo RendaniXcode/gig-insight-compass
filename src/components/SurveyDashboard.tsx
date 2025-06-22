@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward, List, Edit2, Save, X } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
@@ -22,6 +23,21 @@ interface SurveyDashboardProps {
   onLoadInterview?: (sessionId: string) => void;
   onUpdateSession?: (updates: Partial<InterviewSession>) => void;
 }
+
+const PLATFORM_OPTIONS = [
+  "UBER",
+  "BOLT", 
+  "iDrive",
+  "Shesha",
+  "Other"
+];
+
+const EMPLOYMENT_TYPE_OPTIONS = [
+  "Employee",
+  "Freelancer", 
+  "Contractor",
+  "Other"
+];
 
 const SurveyDashboard = ({ 
   session, 
@@ -46,6 +62,10 @@ const SurveyDashboard = ({
     employmentType: '',
     interviewCode: ''
   });
+  const [customPlatform, setCustomPlatform] = useState('');
+  const [customEmploymentType, setCustomEmploymentType] = useState('');
+  const [showCustomPlatform, setShowCustomPlatform] = useState(false);
+  const [showCustomEmploymentType, setShowCustomEmploymentType] = useState(false);
 
   useEffect(() => {
     const totalQuestions = SURVEY_QUESTIONS.length;
@@ -104,6 +124,20 @@ const SurveyDashboard = ({
       employmentType: targetSession.employmentType || '',
       interviewCode: targetSession.interviewCode || ''
     });
+    
+    // Check if current values are custom (not in predefined options)
+    const isCustomPlatform = targetSession.platformName && !PLATFORM_OPTIONS.includes(targetSession.platformName);
+    const isCustomEmployment = targetSession.employmentType && !EMPLOYMENT_TYPE_OPTIONS.includes(targetSession.employmentType);
+    
+    setShowCustomPlatform(isCustomPlatform);
+    setShowCustomEmploymentType(isCustomEmployment);
+    
+    if (isCustomPlatform) {
+      setCustomPlatform(targetSession.platformName || '');
+    }
+    if (isCustomEmployment) {
+      setCustomEmploymentType(targetSession.employmentType || '');
+    }
   }, [selectedInterview, session]);
 
   const handleStartEdit = () => {
@@ -117,16 +151,30 @@ const SurveyDashboard = ({
       employmentType: targetSession.employmentType || '',
       interviewCode: targetSession.interviewCode || ''
     });
+    
+    // Reset custom input states
+    const isCustomPlatform = targetSession.platformName && !PLATFORM_OPTIONS.includes(targetSession.platformName);
+    const isCustomEmployment = targetSession.employmentType && !EMPLOYMENT_TYPE_OPTIONS.includes(targetSession.employmentType);
+    
+    setShowCustomPlatform(isCustomPlatform);
+    setShowCustomEmploymentType(isCustomEmployment);
+    setCustomPlatform(isCustomPlatform ? targetSession.platformName || '' : '');
+    setCustomEmploymentType(isCustomEmployment ? targetSession.employmentType || '' : '');
+    
     setIsEditing(false);
   };
 
   const handleSaveEdit = () => {
+    // Determine final values (use custom input if "Other" is selected)
+    const finalPlatformName = showCustomPlatform ? customPlatform : editValues.platformName;
+    const finalEmploymentType = showCustomEmploymentType ? customEmploymentType : editValues.employmentType;
+    
     if (selectedInterview) {
       // Update the selected interview
       const updatedInterview = {
         ...selectedInterview,
-        platformName: editValues.platformName,
-        employmentType: editValues.employmentType,
+        platformName: finalPlatformName,
+        employmentType: finalEmploymentType,
         interviewCode: editValues.interviewCode,
         lastUpdated: new Date()
       };
@@ -145,14 +193,34 @@ const SurveyDashboard = ({
       // Update the current session
       if (onUpdateSession) {
         onUpdateSession({
-          platformName: editValues.platformName,
-          employmentType: editValues.employmentType,
+          platformName: finalPlatformName,
+          employmentType: finalEmploymentType,
           interviewCode: editValues.interviewCode
         });
       }
     }
     
     setIsEditing(false);
+  };
+
+  const handlePlatformChange = (value: string) => {
+    if (value === "Other") {
+      setShowCustomPlatform(true);
+      setEditValues(prev => ({ ...prev, platformName: "Other" }));
+    } else {
+      setShowCustomPlatform(false);
+      setEditValues(prev => ({ ...prev, platformName: value }));
+    }
+  };
+
+  const handleEmploymentTypeChange = (value: string) => {
+    if (value === "Other") {
+      setShowCustomEmploymentType(true);
+      setEditValues(prev => ({ ...prev, employmentType: "Other" }));
+    } else {
+      setShowCustomEmploymentType(false);
+      setEditValues(prev => ({ ...prev, employmentType: value }));
+    }
   };
 
   const formatDuration = (startTime: Date, endTime?: Date) => {
@@ -530,12 +598,27 @@ const SurveyDashboard = ({
               <div>
                 <Label className="text-sm font-medium text-gray-500">Platform</Label>
                 {isEditing ? (
-                  <Input
-                    value={editValues.platformName}
-                    onChange={(e) => setEditValues(prev => ({ ...prev, platformName: e.target.value }))}
-                    placeholder="Enter platform name"
-                    className="mt-1"
-                  />
+                  <div className="space-y-2 mt-1">
+                    <Select value={showCustomPlatform ? "Other" : editValues.platformName} onValueChange={handlePlatformChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg z-50">
+                        {PLATFORM_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {showCustomPlatform && (
+                      <Input
+                        value={customPlatform}
+                        onChange={(e) => setCustomPlatform(e.target.value)}
+                        placeholder="Enter custom platform"
+                      />
+                    )}
+                  </div>
                 ) : (
                   <p className="text-lg font-semibold mt-1">{selectedInterview.platformName || "Not specified"}</p>
                 )}
@@ -543,12 +626,27 @@ const SurveyDashboard = ({
               <div>
                 <Label className="text-sm font-medium text-gray-500">Employment Type</Label>
                 {isEditing ? (
-                  <Input
-                    value={editValues.employmentType}
-                    onChange={(e) => setEditValues(prev => ({ ...prev, employmentType: e.target.value }))}
-                    placeholder="Enter employment type"
-                    className="mt-1"
-                  />
+                  <div className="space-y-2 mt-1">
+                    <Select value={showCustomEmploymentType ? "Other" : editValues.employmentType} onValueChange={handleEmploymentTypeChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employment type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg z-50">
+                        {EMPLOYMENT_TYPE_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {showCustomEmploymentType && (
+                      <Input
+                        value={customEmploymentType}
+                        onChange={(e) => setCustomEmploymentType(e.target.value)}
+                        placeholder="Enter custom employment type"
+                      />
+                    )}
+                  </div>
                 ) : (
                   <p className="text-lg font-semibold mt-1">{selectedInterview.employmentType || "Not specified"}</p>
                 )}
