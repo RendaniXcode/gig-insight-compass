@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -175,7 +176,7 @@ const QuestionInterface = ({
           </div>
         );
 
-      case 'select':
+      case 'multiple_choice':
         return (
           <div className="space-y-2">
             <Label className="text-sm font-medium">Select an Option</Label>
@@ -209,7 +210,7 @@ const QuestionInterface = ({
           </div>
         );
 
-      case 'boolean':
+      case 'yes_no':
         return (
           <div className="space-y-2">
             <Label className="text-sm font-medium">Select Yes or No</Label>
@@ -342,19 +343,6 @@ const QuestionInterface = ({
           <div className="bg-gray-50 p-4 rounded-lg">
             {renderQuestionInput()}
           </div>
-
-          {/* Help Text */}
-          {currentQuestion.helpText && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-blue-800">Helper Information</p>
-                  <p className="text-sm text-blue-700 mt-1">{currentQuestion.helpText}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Navigation - Updated for better mobile layout */}
           <div className="flex items-center justify-between gap-2 pt-4">
