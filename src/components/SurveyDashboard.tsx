@@ -259,7 +259,7 @@ const SurveyDashboard = ({
   const getInterviewStatusBadge = (interview: InterviewSession) => {
     switch (interview.status) {
       case 'completed':
-        return <Badge className="bg-green-500 hover:bg-green-600 text-xs">Completed</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600 text-xs">Done</Badge>;
       case 'in-progress':
         return (
           <Button
@@ -273,7 +273,7 @@ const SurveyDashboard = ({
                 onLoadInterview?.(interview.id);
               }
             }}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 hover:border-yellow-600 flex items-center gap-1 text-xs h-6"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 hover:border-yellow-600 flex items-center gap-1 text-xs h-6 px-2"
           >
             <Play className="h-3 w-3" />
             Continue
@@ -292,7 +292,7 @@ const SurveyDashboard = ({
                 onLoadInterview?.(interview.id);
               }
             }}
-            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600 flex items-center gap-1 text-xs h-6"
+            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600 flex items-center gap-1 text-xs h-6 px-2"
           >
             <Play className="h-3 w-3" />
             Start
@@ -444,67 +444,70 @@ const SurveyDashboard = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-4 p-2">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Interview Dashboard</h1>
-        <p className="text-gray-600">Survey progress and session overview</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Interview Dashboard</h1>
+        <p className="text-sm text-gray-600">Survey progress and session overview</p>
       </div>
 
-      {/* Interview List Section with Accordion */}
+      {/* Interview List Section with Accordion - Mobile Optimized */}
       <Card>
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="interviews" className="border-none">
             <CardHeader className="pb-0">
               <AccordionTrigger className="hover:no-underline">
-                <CardTitle className="flex items-center gap-2">
-                  <List className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <List className="h-4 w-4" />
                   All Interviews
                 </CardTitle>
               </AccordionTrigger>
             </CardHeader>
             <AccordionContent>
-              <CardContent>
+              <CardContent className="p-2">
                 {allInterviews.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>#</TableHead>
-                        <TableHead>Interviewer</TableHead>
-                        <TableHead>Platform</TableHead>
-                        <TableHead>Interview Code</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Progress</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Duration</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <div className="space-y-2">
+                    {/* Mobile Card Layout - Replace Table */}
+                    <div className="block">
                       {allInterviews.map((interview, index) => (
-                        <TableRow 
+                        <div 
                           key={interview.id} 
-                          className={`cursor-pointer hover:bg-gray-50 ${
-                            selectedInterview?.id === interview.id ? 'bg-blue-100' : 
-                            interview.id === session.id ? 'bg-blue-50' : ''
+                          className={`border rounded-lg p-3 mb-2 cursor-pointer hover:bg-gray-50 transition-colors ${
+                            selectedInterview?.id === interview.id ? 'bg-blue-100 border-blue-300' : 
+                            interview.id === session.id ? 'bg-blue-50 border-blue-200' : 'border-gray-200'
                           }`}
                           onClick={() => handleInterviewClick(interview)}
                         >
-                          <TableCell className="font-medium">{index + 1}</TableCell>
-                          <TableCell className="font-medium">{interview.interviewer}</TableCell>
-                          <TableCell>{interview.platformName || "Not specified"}</TableCell>
-                          <TableCell>{interview.interviewCode || interview.id.slice(-8)}</TableCell>
-                          <TableCell>{getInterviewStatusBadge(interview)}</TableCell>
-                          <TableCell>
+                          <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <Progress value={getInterviewProgress(interview)} className="w-16 h-2" />
-                              <span className="text-xs text-gray-600">{getInterviewProgress(interview)}%</span>
+                              <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded">#{index + 1}</span>
+                              <span className="text-sm font-medium truncate">{interview.interviewer}</span>
                             </div>
-                          </TableCell>
-                          <TableCell>{interview.interviewDate}</TableCell>
-                          <TableCell>{formatDuration(interview.startTime, interview.endTime)}</TableCell>
-                        </TableRow>
+                            {getInterviewStatusBadge(interview)}
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                            <div>
+                              <span className="font-medium">Platform:</span> {interview.platformName || "Not specified"}
+                            </div>
+                            <div>
+                              <span className="font-medium">Code:</span> {interview.interviewCode || interview.id.slice(-8)}
+                            </div>
+                            <div>
+                              <span className="font-medium">Date:</span> {interview.interviewDate}
+                            </div>
+                            <div>
+                              <span className="font-medium">Duration:</span> {formatDuration(interview.startTime, interview.endTime)}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-2">
+                            <Progress value={getInterviewProgress(interview)} className="flex-1 h-1.5" />
+                            <span className="text-xs text-gray-600 min-w-fit">{getInterviewProgress(interview)}%</span>
+                          </div>
+                        </div>
                       ))}
-                    </TableBody>
-                  </Table>
+                    </div>
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -520,10 +523,10 @@ const SurveyDashboard = ({
       {/* Current Interview Status - Only show when an interview is selected */}
       {selectedInterview && (
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-4 w-4" />
                 Current Interview Status
               </CardTitle>
               <div className="flex items-center gap-2">
@@ -533,18 +536,18 @@ const SurveyDashboard = ({
                     variant="outline"
                     size="sm"
                     onClick={handleStartEdit}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 text-xs h-7"
                   >
                     <Edit2 className="h-3 w-3" />
                     Edit
                   </Button>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-1">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleSaveEdit}
-                      className="flex items-center gap-1 text-green-600 border-green-500 hover:bg-green-50"
+                      className="flex items-center gap-1 text-xs h-7 text-green-600 border-green-500 hover:bg-green-50"
                     >
                       <Save className="h-3 w-3" />
                       Save
@@ -553,7 +556,7 @@ const SurveyDashboard = ({
                       variant="outline"
                       size="sm"
                       onClick={handleCancelEdit}
-                      className="flex items-center gap-1 text-red-600 border-red-500 hover:bg-red-50"
+                      className="flex items-center gap-1 text-xs h-7 text-red-600 border-red-500 hover:bg-red-50"
                     >
                       <X className="h-3 w-3" />
                       Cancel
@@ -563,30 +566,30 @@ const SurveyDashboard = ({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 p-4">
             {/* Interviewer Information */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-blue-500" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-blue-500" />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Interviewer</label>
-                  <p className="text-lg font-semibold">{selectedInterview.interviewer}</p>
+                  <label className="text-xs font-medium text-gray-500">Interviewer</label>
+                  <p className="text-sm font-semibold">{selectedInterview.interviewer}</p>
                 </div>
               </div>
               {selectedInterview.interviewerEmail && (
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-blue-500" />
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-blue-500" />
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-lg font-semibold">{selectedInterview.interviewerEmail}</p>
+                    <label className="text-xs font-medium text-gray-500">Email</label>
+                    <p className="text-sm font-semibold truncate">{selectedInterview.interviewerEmail}</p>
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-blue-500" />
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-blue-500" />
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Date</label>
-                  <p className="text-lg font-semibold">{selectedInterview.interviewDate}</p>
+                  <label className="text-xs font-medium text-gray-500">Date</label>
+                  <p className="text-sm font-semibold">{selectedInterview.interviewDate}</p>
                 </div>
               </div>
             </div>
@@ -594,13 +597,13 @@ const SurveyDashboard = ({
             <Separator />
 
             {/* Session Information - Editable Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <Label className="text-sm font-medium text-gray-500">Platform</Label>
+                <Label className="text-xs font-medium text-gray-500">Platform</Label>
                 {isEditing ? (
                   <div className="space-y-2 mt-1">
                     <Select value={showCustomPlatform ? "Other" : editValues.platformName} onValueChange={handlePlatformChange}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Select platform" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border shadow-lg z-50">
@@ -616,19 +619,20 @@ const SurveyDashboard = ({
                         value={customPlatform}
                         onChange={(e) => setCustomPlatform(e.target.value)}
                         placeholder="Enter custom platform"
+                        className="h-8 text-xs"
                       />
                     )}
                   </div>
                 ) : (
-                  <p className="text-lg font-semibold mt-1">{selectedInterview.platformName || "Not specified"}</p>
+                  <p className="text-sm font-semibold mt-1">{selectedInterview.platformName || "Not specified"}</p>
                 )}
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-500">Employment Type</Label>
+                <Label className="text-xs font-medium text-gray-500">Employment Type</Label>
                 {isEditing ? (
                   <div className="space-y-2 mt-1">
                     <Select value={showCustomEmploymentType ? "Other" : editValues.employmentType} onValueChange={handleEmploymentTypeChange}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue placeholder="Select employment type" />
                       </SelectTrigger>
                       <SelectContent className="bg-white border shadow-lg z-50">
@@ -644,45 +648,46 @@ const SurveyDashboard = ({
                         value={customEmploymentType}
                         onChange={(e) => setCustomEmploymentType(e.target.value)}
                         placeholder="Enter custom employment type"
+                        className="h-8 text-xs"
                       />
                     )}
                   </div>
                 ) : (
-                  <p className="text-lg font-semibold mt-1">{selectedInterview.employmentType || "Not specified"}</p>
+                  <p className="text-sm font-semibold mt-1">{selectedInterview.employmentType || "Not specified"}</p>
                 )}
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-500">Interview Code</Label>
+                <Label className="text-xs font-medium text-gray-500">Interview Code</Label>
                 {isEditing ? (
                   <Input
                     value={editValues.interviewCode}
                     onChange={(e) => setEditValues(prev => ({ ...prev, interviewCode: e.target.value }))}
                     placeholder="Enter interview code"
-                    className="mt-1"
+                    className="mt-1 h-8 text-xs"
                   />
                 ) : (
-                  <p className="text-lg font-semibold mt-1">{selectedInterview.interviewCode || selectedInterview.id}</p>
+                  <p className="text-sm font-semibold mt-1">{selectedInterview.interviewCode || selectedInterview.id}</p>
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Duration</label>
-                <p className="text-lg font-semibold flex items-center gap-1 mt-1">
-                  <Clock className="h-4 w-4" />
+                <label className="text-xs font-medium text-gray-500">Duration</label>
+                <p className="text-sm font-semibold flex items-center gap-1 mt-1">
+                  <Clock className="h-3 w-3" />
                   {formatDuration(selectedInterview.startTime, selectedInterview.endTime)}
                 </p>
               </div>
             </div>
             
             {/* Time Tracking Details - Read Only */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
               <div>
-                <label className="text-sm font-medium text-gray-500">Started At</label>
-                <p className="text-sm">{selectedInterview.startTime.toLocaleString()}</p>
+                <label className="text-xs font-medium text-gray-500">Started At</label>
+                <p className="text-xs">{selectedInterview.startTime.toLocaleString()}</p>
               </div>
               {selectedInterview.endTime && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Completed At</label>
-                  <p className="text-sm">{selectedInterview.endTime.toLocaleString()}</p>
+                  <label className="text-xs font-medium text-gray-500">Completed At</label>
+                  <p className="text-xs">{selectedInterview.endTime.toLocaleString()}</p>
                 </div>
               )}
             </div>
@@ -692,13 +697,13 @@ const SurveyDashboard = ({
 
       {/* Overall Progress - Show for selected interview or current session */}
       <Card>
-        <CardHeader>
-          <CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">
             {selectedInterview ? 'Selected Interview Progress' : 'Overall Progress'}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-4">
+          <div className="space-y-3">
             {(() => {
               const currentStats = selectedInterview ? getSelectedInterviewStats() : stats;
               if (!currentStats) return null;
@@ -711,8 +716,8 @@ const SurveyDashboard = ({
                       {currentStats.answeredQuestions} / {currentStats.totalQuestions}
                     </span>
                   </div>
-                  <Progress value={currentStats.completionPercentage} className="h-3" />
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <Progress value={currentStats.completionPercentage} className="h-2" />
+                  <div className="flex justify-between text-xs text-gray-600">
                     <span>{currentStats.completionPercentage.toFixed(1)}% Complete</span>
                     <span>{currentStats.categoriesCompleted} / {SURVEY_CATEGORIES.length} Categories</span>
                   </div>
@@ -725,19 +730,19 @@ const SurveyDashboard = ({
 
       {/* Category Progress */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <div className="flex justify-between items-center">
-            <CardTitle>
+            <CardTitle className="text-lg">
               {selectedInterview ? 'Selected Interview Categories' : 'Category Progress'}
             </CardTitle>
-            <Button onClick={onExport} className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
+            <Button onClick={onExport} className="flex items-center gap-2 text-xs h-8">
+              <Download className="h-3 w-3" />
               Export Data
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {getCategoryStats().map((category) => {
               // Determine card background and border color based on status
               let cardClasses = "border-l-4 transition-all duration-200 hover:shadow-md ";
@@ -776,21 +781,21 @@ const SurveyDashboard = ({
                   style={{ borderLeftColor: borderColor }}
                   onClick={() => handleCategoryClick(category.code)}
                 >
-                  <CardContent className="pt-4">
-                    <div className="space-y-3">
+                  <CardContent className="pt-3 p-3">
+                    <div className="space-y-2">
                       <div className="flex justify-between items-start">
-                        <span className="font-medium text-sm leading-tight pr-2">{category.name}</span>
+                        <span className="font-medium text-xs leading-tight pr-2">{category.name}</span>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           {category.isCompleted && !category.skipped && (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <CheckCircle className="h-3 w-3 text-green-500" />
                           )}
                           {category.skipped && (
-                            <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700">
+                            <Badge variant="secondary" className="text-xs bg-gray-200 text-gray-700 px-1 py-0 h-4">
                               Skipped
                             </Badge>
                           )}
                           {category.status === 'partial' && (
-                            <Badge variant="secondary" className="text-xs bg-yellow-200 text-yellow-800">
+                            <Badge variant="secondary" className="text-xs bg-yellow-200 text-yellow-800 px-1 py-0 h-4">
                               Partial
                             </Badge>
                           )}
@@ -807,16 +812,16 @@ const SurveyDashboard = ({
                       </div>
                       
                       {!category.skipped && (
-                        <Progress value={category.completion} className="h-2" />
+                        <Progress value={category.completion} className="h-1.5" />
                       )}
                       
                       {/* Only show action buttons if not viewing a selected interview */}
                       {!selectedInterview && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 text-xs h-7"
+                            className="flex-1 text-xs h-6"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCategoryClick(category.code);
@@ -829,7 +834,7 @@ const SurveyDashboard = ({
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="flex items-center gap-1 text-xs h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                              className="flex items-center gap-1 text-xs h-6 text-orange-600 hover:text-orange-700 hover:bg-orange-50 px-2"
                               onClick={(e) => handleSkipCategory(category.code, e)}
                             >
                               <SkipForward className="h-3 w-3" />
