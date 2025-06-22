@@ -113,6 +113,10 @@ const QuestionInterface = ({
     setCurrentAnswer("SKIPPED");
   };
 
+  const handleQuestionNumberClick = (index: number) => {
+    setCurrentQuestionIndex(index);
+  };
+
   const isLastQuestion = currentQuestionIndex === categoryQuestions.length - 1;
 
   const getAnswerStatus = () => {
@@ -120,6 +124,19 @@ const QuestionInterface = ({
       return "unanswered";
     }
     if (currentAnswer === "SKIPPED") {
+      return "skipped";
+    }
+    return "answered";
+  };
+
+  const getQuestionStatus = (questionIndex: number) => {
+    const question = categoryQuestions[questionIndex];
+    const response = responses.find(r => r.questionId === question.id);
+    
+    if (!response || !response.answer || response.answer.trim() === "") {
+      return "unanswered";
+    }
+    if (response.answer === "SKIPPED") {
       return "skipped";
     }
     return "answered";
@@ -152,12 +169,10 @@ const QuestionInterface = ({
       case 'text':
         return (
           <div className="space-y-2">
-            <Label htmlFor="answer" className="text-sm font-medium">Your Answer</Label>
             <Input
-              id="answer"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
-              placeholder="Type your answer here..."
+              placeholder="Enter your answer..."
               className="w-full"
             />
           </div>
@@ -166,9 +181,7 @@ const QuestionInterface = ({
       case 'textarea':
         return (
           <div className="space-y-2">
-            <Label htmlFor="answer" className="text-sm font-medium">Your Answer</Label>
             <Textarea
-              id="answer"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
               placeholder="Provide a detailed answer..."
@@ -181,10 +194,9 @@ const QuestionInterface = ({
       case 'multiple_choice':
         return (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Select an Option</Label>
             <Select value={currentAnswer} onValueChange={setCurrentAnswer}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose an option..." />
+                <SelectValue placeholder="Select an option..." />
               </SelectTrigger>
               <SelectContent>
                 {currentQuestion.options?.map((option) => (
@@ -200,9 +212,7 @@ const QuestionInterface = ({
       case 'number':
         return (
           <div className="space-y-2">
-            <Label htmlFor="answer" className="text-sm font-medium">Enter Amount</Label>
             <Input
-              id="answer"
               type="number"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
@@ -215,7 +225,6 @@ const QuestionInterface = ({
       case 'yes_no':
         return (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Select Yes or No</Label>
             <Select value={currentAnswer} onValueChange={setCurrentAnswer}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose Yes or No..." />
@@ -231,9 +240,7 @@ const QuestionInterface = ({
       case 'date':
         return (
           <div className="space-y-2">
-            <Label htmlFor="answer" className="text-sm font-medium">Enter Date</Label>
             <Input
-              id="answer"
               type="date"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
@@ -245,9 +252,7 @@ const QuestionInterface = ({
       default:
         return (
           <div className="space-y-2">
-            <Label htmlFor="answer" className="text-sm font-medium">Your Answer</Label>
             <Input
-              id="answer"
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
               placeholder="Type your answer here..."
@@ -292,6 +297,9 @@ const QuestionInterface = ({
             className={`w-3 h-3 rounded-full ${category?.color || 'bg-blue-500'}`}
           />
           <span className="font-medium text-sm">{category?.name}</span>
+          <span className="text-sm text-gray-500">
+            {currentQuestionIndex + 1} of {categoryQuestions.length}
+          </span>
         </div>
         
         <Button
@@ -310,25 +318,25 @@ const QuestionInterface = ({
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-lg leading-tight">
+              <CardTitle className="text-lg leading-tight mb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="text-xs">
+                    {currentQuestion.id}
+                  </Badge>
+                  <Badge 
+                    className={`text-xs ${
+                      getAnswerStatus() === 'answered' ? 'bg-green-500 hover:bg-green-600' :
+                      getAnswerStatus() === 'skipped' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                      'bg-gray-500 hover:bg-gray-600'
+                    }`}
+                  >
+                    {getAnswerStatus() === 'answered' && <CheckCircle className="h-3 w-3 mr-1" />}
+                    {getAnswerStatus() === 'skipped' && <AlertCircle className="h-3 w-3 mr-1" />}
+                    {getAnswerStatus().charAt(0).toUpperCase() + getAnswerStatus().slice(1)}
+                  </Badge>
+                </div>
                 {currentQuestion.question}
               </CardTitle>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant="outline" className="text-xs">
-                  {currentQuestion.id}
-                </Badge>
-                <Badge 
-                  className={`text-xs ${
-                    getAnswerStatus() === 'answered' ? 'bg-green-500 hover:bg-green-600' :
-                    getAnswerStatus() === 'skipped' ? 'bg-yellow-500 hover:bg-yellow-600' :
-                    'bg-gray-500 hover:bg-gray-600'
-                  }`}
-                >
-                  {getAnswerStatus() === 'answered' && <CheckCircle className="h-3 w-3 mr-1" />}
-                  {getAnswerStatus() === 'skipped' && <AlertCircle className="h-3 w-3 mr-1" />}
-                  {getAnswerStatus().charAt(0).toUpperCase() + getAnswerStatus().slice(1)}
-                </Badge>
-              </div>
             </div>
             
             <div className="flex items-center gap-2">
@@ -339,7 +347,7 @@ const QuestionInterface = ({
                 className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex items-center gap-1 text-xs"
               >
                 <SkipForward className="h-3 w-3" />
-                Skip
+                Skip This Question
               </Button>
               <Button
                 variant="outline"
@@ -348,7 +356,7 @@ const QuestionInterface = ({
                 className="flex items-center gap-1 text-xs"
               >
                 <Save className="h-3 w-3" />
-                Save
+                Save Progress
               </Button>
             </div>
           </div>
@@ -360,26 +368,26 @@ const QuestionInterface = ({
             {renderQuestionInput()}
           </div>
 
-          {/* Navigation - Updated for better mobile layout */}
+          {/* Navigation */}
           <div className="flex items-center justify-between gap-2 pt-4">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentQuestionIndex === 0}
-              className="flex items-center gap-2 flex-1 max-w-[120px]"
+              className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
             </Button>
             
-            <div className="text-sm text-gray-500 text-center px-2 flex-shrink-0">
+            <div className="text-sm text-gray-500 text-center">
               Question {currentQuestionIndex + 1} of {categoryQuestions.length}
             </div>
             
             {!isLastQuestion ? (
               <Button
                 onClick={handleNext}
-                className="flex items-center gap-2 flex-1 max-w-[120px]"
+                className="flex items-center gap-2"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -388,24 +396,24 @@ const QuestionInterface = ({
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
-                    className="flex items-center gap-2 flex-1 max-w-[120px] bg-green-600 hover:bg-green-700 text-xs"
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >
                     <Database className="h-4 w-4" />
-                    Complete
+                    Complete Category
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="w-[75%] max-w-[300px] sm:max-w-[350px]">
+                <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-base">Complete Category</AlertDialogTitle>
-                    <AlertDialogDescription className="text-sm">
+                    <AlertDialogTitle>Complete Category</AlertDialogTitle>
+                    <AlertDialogDescription>
                       You've reached the end of this category. Would you like to save your progress and move to the next category?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                    <AlertDialogCancel className="text-xs h-8">Stay Here</AlertDialogCancel>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Stay Here</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={handleSaveAndNext}
-                      className="bg-green-600 hover:bg-green-700 text-xs h-8"
+                      className="bg-green-600 hover:bg-green-700"
                     >
                       Continue to Next Category
                     </AlertDialogAction>
@@ -413,6 +421,39 @@ const QuestionInterface = ({
                 </AlertDialogContent>
               </AlertDialog>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Question Overview - Numbers at Bottom */}
+      <Card className="w-full">
+        <CardContent className="p-4">
+          <h3 className="text-lg font-semibold mb-4">Question Overview</h3>
+          <div className="grid grid-cols-8 gap-2">
+            {categoryQuestions.map((_, index) => {
+              const status = getQuestionStatus(index);
+              return (
+                <Button
+                  key={index}
+                  variant={currentQuestionIndex === index ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleQuestionNumberClick(index)}
+                  className={`
+                    h-10 w-10 p-0 text-sm font-semibold
+                    ${currentQuestionIndex === index 
+                      ? 'bg-blue-600 text-white' 
+                      : status === 'answered' 
+                        ? 'bg-green-500 text-white hover:bg-green-600' 
+                        : status === 'skipped'
+                          ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                          : 'bg-white text-gray-600 border hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {index + 1}
+                </Button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

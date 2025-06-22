@@ -18,9 +18,9 @@ export const SURVEY_QUESTIONS: Question[] = [
   // Platform Overview
   { id: 'PO_01', question: 'Is this platform your main job?', category: 'Platform Overview', categoryCode: 'PO', type: 'yes_no', interviewSection: '2. Platform Basics' },
   { id: 'PO_01a', question: 'What other jobs do you have?', category: 'Platform Overview', categoryCode: 'PO', type: 'text', followUpTo: 'PO_01', interviewSection: '2. Platform Basics' },
-  { id: 'PO_02', question: 'What challenges do you face with this work?', category: 'Platform Overview', categoryCode: 'PO', type: 'text', interviewSection: '7. Hidden Labor' },
   { id: 'PO_03', question: 'Did you have a previous job before this platform?', category: 'Platform Overview', categoryCode: 'PO', type: 'yes_no', interviewSection: '2. Platform Basics' },
   { id: 'PO_03a', question: 'How does your income from this platform compare to your previous job?', category: 'Platform Overview', categoryCode: 'PO', type: 'multiple_choice', options: ['Much better', 'Better', 'About the same', 'Worse', 'Much worse'], followUpTo: 'PO_03', interviewSection: '2. Platform Basics' },
+  { id: 'PO_02', question: 'What challenges do you face with this work?', category: 'Platform Overview', categoryCode: 'PO', type: 'text', interviewSection: '7. Hidden Labor' },
 
   // Work Structure
   { id: 'WS_01', question: 'How many hours per day do you work on this platform?', category: 'Work Structure', categoryCode: 'WS', type: 'number', interviewSection: '3. Work Organization' },
