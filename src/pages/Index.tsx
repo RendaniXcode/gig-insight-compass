@@ -57,7 +57,37 @@ const Index = () => {
   // Save session to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('survey_session', JSON.stringify(session));
+    // Also save with a unique key for the interview list
+    localStorage.setItem(`interview_session_${session.id}`, JSON.stringify(session));
   }, [session]);
+
+  const handleLoadInterview = (sessionId: string) => {
+    const savedSession = localStorage.getItem(`interview_session_${sessionId}`);
+    if (savedSession) {
+      try {
+        const parsed = JSON.parse(savedSession);
+        const restoredSession = {
+          ...parsed,
+          startTime: new Date(parsed.startTime),
+          endTime: parsed.endTime ? new Date(parsed.endTime) : undefined,
+          lastUpdated: new Date(parsed.lastUpdated)
+        };
+        setSession(restoredSession);
+        
+        // Update the main session storage too
+        localStorage.setItem('survey_session', JSON.stringify(restoredSession));
+        
+        // If completed, show dashboard; otherwise show categories
+        setCurrentView(restoredSession.status === 'completed' ? 'dashboard' : 'categories');
+        setSelectedCategory(null);
+        
+        toast.success(`Loaded interview: ${restoredSession.interviewCode || restoredSession.id.slice(-8)}`);
+      } catch (error) {
+        console.error('Error loading interview session:', error);
+        toast.error('Failed to load interview session');
+      }
+    }
+  };
 
   const handleInterviewerSetup = (interviewer: string, email?: string) => {
     const startTime = new Date();
@@ -288,7 +318,7 @@ const Index = () => {
     setSelectedCategory(null);
     setCurrentView('setup');
     
-    // Clear localStorage
+    // Clear main session localStorage but keep individual sessions
     localStorage.removeItem('survey_session');
     
     toast.success("Starting new interview session");
@@ -502,6 +532,7 @@ const Index = () => {
             onContinueInterview={handleContinueInterview}
             onCategorySelect={handleDashboardCategorySelect}
             onSkipCategory={handleSkipCategory}
+            onLoadInterview={handleLoadInterview}
           />
         )}
       </div>

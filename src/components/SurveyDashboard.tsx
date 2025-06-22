@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward } from "lucide-react";
+import { Download, FileText, Clock, CheckCircle, User, Mail, Calendar, Play, SkipForward, List } from "lucide-react";
 import { InterviewSession, SurveyResponse } from "../types/survey";
 import { SURVEY_QUESTIONS } from "../data/questions";
 import { SURVEY_CATEGORIES } from "../types/survey";
 import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface SurveyDashboardProps {
   session: InterviewSession;
@@ -15,6 +16,7 @@ interface SurveyDashboardProps {
   onContinueInterview?: () => void;
   onCategorySelect?: (categoryCode: string) => void;
   onSkipCategory?: (categoryCode: string) => void;
+  onLoadInterview?: (sessionId: string) => void;
 }
 
 const SurveyDashboard = ({ 
@@ -22,7 +24,8 @@ const SurveyDashboard = ({
   onExport, 
   onContinueInterview, 
   onCategorySelect,
-  onSkipCategory 
+  onSkipCategory,
+  onLoadInterview
 }: SurveyDashboardProps) => {
   const [stats, setStats] = useState({
     totalQuestions: 0,
@@ -30,6 +33,7 @@ const SurveyDashboard = ({
     completionPercentage: 0,
     categoriesCompleted: 0
   });
+  const [allInterviews, setAllInterviews] = useState<InterviewSession[]>([]);
 
   useEffect(() => {
     const totalQuestions = SURVEY_QUESTIONS.length;
@@ -44,6 +48,41 @@ const SurveyDashboard = ({
       categoriesCompleted
     });
   }, [session]);
+
+  useEffect(() => {
+    // Load all interview sessions from localStorage
+    const loadAllInterviews = () => {
+      const interviews: InterviewSession[] = [];
+      
+      // Get all keys from localStorage that start with 'interview_session_'
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('interview_session_')) {
+          try {
+            const savedSession = localStorage.getItem(key);
+            if (savedSession) {
+              const parsed = JSON.parse(savedSession);
+              const restoredSession = {
+                ...parsed,
+                startTime: new Date(parsed.startTime),
+                endTime: parsed.endTime ? new Date(parsed.endTime) : undefined,
+                lastUpdated: new Date(parsed.lastUpdated)
+              };
+              interviews.push(restoredSession);
+            }
+          } catch (error) {
+            console.error('Error loading interview session:', error);
+          }
+        }
+      }
+      
+      // Sort by last updated (most recent first)
+      interviews.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
+      setAllInterviews(interviews);
+    };
+
+    loadAllInterviews();
+  }, [session.lastUpdated]);
 
   const formatDuration = (startTime: Date, endTime?: Date) => {
     const end = endTime || new Date();
@@ -76,6 +115,22 @@ const SurveyDashboard = ({
       default:
         return <Badge className="bg-gray-500 hover:bg-gray-600">Not Started</Badge>;
     }
+  };
+
+  const getInterviewStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-500 hover:bg-green-600 text-xs">Completed</Badge>;
+      case 'in-progress':
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-xs">In Progress</Badge>;
+      default:
+        return <Badge className="bg-gray-500 hover:bg-gray-600 text-xs">Not Started</Badge>;
+    }
+  };
+
+  const getInterviewProgress = (interview: InterviewSession) => {
+    const answeredQuestions = interview.responses.filter(r => r.answer.trim() !== "").length;
+    return Math.round((answeredQuestions / SURVEY_QUESTIONS.length) * 100);
   };
 
   const getCategoryStats = () => {
@@ -129,6 +184,12 @@ const SurveyDashboard = ({
     }
   };
 
+  const handleInterviewClick = (interviewId: string) => {
+    if (onLoadInterview && interviewId !== session.id) {
+      onLoadInterview(interviewId);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="text-center">
@@ -136,13 +197,67 @@ const SurveyDashboard = ({
         <p className="text-gray-600">Survey progress and session overview</p>
       </div>
 
+      {/* Interview List Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <List className="h-5 w-5" />
+            All Interviews
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {allInterviews.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Interviewer</TableHead>
+                  <TableHead>Platform</TableHead>
+                  <TableHead>Interview Code</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Progress</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Duration</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {allInterviews.map((interview) => (
+                  <TableRow 
+                    key={interview.id} 
+                    className={`cursor-pointer hover:bg-gray-50 ${interview.id === session.id ? 'bg-blue-50' : ''}`}
+                    onClick={() => handleInterviewClick(interview.id)}
+                  >
+                    <TableCell className="font-medium">{interview.interviewer}</TableCell>
+                    <TableCell>{interview.platformName || "Not specified"}</TableCell>
+                    <TableCell>{interview.interviewCode || interview.id.slice(-8)}</TableCell>
+                    <TableCell>{getInterviewStatusBadge(interview.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={getInterviewProgress(interview)} className="w-16 h-2" />
+                        <span className="text-xs text-gray-600">{getInterviewProgress(interview)}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{interview.interviewDate}</TableCell>
+                    <TableCell>{formatDuration(interview.startTime, interview.endTime)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No interviews found</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Combined Interview Status and Session Information */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Interview Status
+              Current Interview Status
             </CardTitle>
             {getStatusBadge()}
           </div>
